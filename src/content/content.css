@@ -1,0 +1,312 @@
+/* ================================================================
+   Falah Extension — Content CSS
+   Injected into every page. Uses isolated IDs to avoid conflicts.
+   ================================================================ */
+
+/* ── Page offset so content doesn't hide behind subbar/panel ── */
+html:not(#falah-noop) {
+  margin-top: var(--falah-subbar-h, 0px) !important;
+  margin-left: var(--falah-panel-w, 0px) !important;
+  transition: margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* ── Subbar ─────────────────────────────────────────────────── */
+#falah-subbar {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 38px !important;
+  z-index: 2147483646 !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 12px !important;
+  gap: 10px !important;
+  background: linear-gradient(90deg, rgba(15,15,18,0.98) 0%, rgba(18,18,22,0.97) 100%) !important;
+  border-bottom: 1px solid rgba(201,152,60,0.2) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.35) !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+}
+
+#falah-subbar::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important; top: 0 !important; bottom: 0 !important;
+  width: 3px !important;
+  background: linear-gradient(180deg, #c9983c, transparent) !important;
+  pointer-events: none !important;
+}
+
+#falah-subbar * {
+  box-sizing: border-box !important;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+.fsb-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.fsb-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex-shrink: 0 !important;
+}
+
+.fsb-lantern svg {
+  display: block !important;
+  filter: drop-shadow(0 0 5px rgba(201,152,60,0.45)) !important;
+}
+
+/* Verdict pill */
+.fsb-verdict {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 3px 10px !important;
+  border-radius: 12px !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.02em !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  background: rgba(255,255,255,0.05) !important;
+  color: rgba(255,255,255,0.6) !important;
+  transition: all 0.3s ease !important;
+}
+
+.fsb-verdict-safe    { background: rgba(16,185,129,0.12) !important; color: #10b981 !important; border-color: rgba(16,185,129,0.2) !important; }
+.fsb-verdict-caution { background: rgba(245,158,11,0.12) !important; color: #f59e0b !important; border-color: rgba(245,158,11,0.2) !important; }
+.fsb-verdict-warning { background: rgba(239,68,68,0.12) !important;  color: #ef4444 !important; border-color: rgba(239,68,68,0.2) !important; }
+.fsb-verdict-blocked { background: rgba(239,68,68,0.18) !important;  color: #ef4444 !important; border-color: rgba(239,68,68,0.25) !important; }
+
+.fsb-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: currentColor !important;
+  display: inline-block !important;
+  flex-shrink: 0 !important;
+}
+
+.fsb-evidence {
+  font-size: 11px !important;
+  color: rgba(255,255,255,0.4) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+  line-height: 1 !important;
+}
+
+.fsb-evidence em {
+  color: #c9983c !important;
+  font-style: normal !important;
+}
+
+/* Pill buttons */
+.fsb-pill {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  height: 24px !important;
+  padding: 0 10px !important;
+  border-radius: 12px !important;
+  font-size: 10.5px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  background: rgba(255,255,255,0.05) !important;
+  color: rgba(255,255,255,0.5) !important;
+  transition: all 0.15s ease !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  text-decoration: none !important;
+  outline: none !important;
+}
+
+.fsb-pill:hover {
+  background: rgba(255,255,255,0.1) !important;
+  color: rgba(255,255,255,0.85) !important;
+}
+
+.fsb-pill-gold {
+  background: rgba(201,152,60,0.12) !important;
+  color: #c9983c !important;
+  border-color: rgba(201,152,60,0.22) !important;
+}
+
+.fsb-pill-gold:hover {
+  background: rgba(201,152,60,0.2) !important;
+  color: #e8b455 !important;
+}
+
+.fsb-prayer {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  height: 24px !important;
+  padding: 0 9px !important;
+  border-radius: 12px !important;
+  font-size: 10.5px !important;
+  color: rgba(255,255,255,0.3) !important;
+  background: rgba(255,255,255,0.03) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+/* ── Side Panel Container ────────────────────────────────────── */
+#falah-panel-container {
+  position: fixed !important;
+  left: 0 !important;
+  top: 38px !important; /* below subbar */
+  bottom: 0 !important;
+  width: 292px !important;
+  z-index: 2147483645 !important;
+  transform: translateX(-100%) !important;
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: 4px 0 24px rgba(0,0,0,0.45) !important;
+  border-right: 1px solid rgba(201,152,60,0.15) !important;
+}
+
+#falah-panel-container.falah-panel-open,
+html.falah-panel-open #falah-panel-container {
+  transform: translateX(0) !important;
+}
+
+#falah-panel-iframe {
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+  display: block !important;
+  background: transparent !important;
+}
+
+/* ── Blocked Overlay ─────────────────────────────────────────── */
+#falah-blocked-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483647 !important;
+  background: rgba(8,8,10,0.94) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  animation: falah-fade-in 0.3s ease !important;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+@keyframes falah-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.fbo-card {
+  background: #111114 !important;
+  border: 1px solid rgba(239,68,68,0.2) !important;
+  border-radius: 18px !important;
+  padding: 36px 40px !important;
+  max-width: 400px !important;
+  width: 90% !important;
+  text-align: center !important;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6) !important;
+  animation: falah-scale-in 0.3s cubic-bezier(0.16,1,0.3,1) !important;
+}
+
+@keyframes falah-scale-in {
+  from { transform: scale(0.92); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.fbo-icon {
+  font-size: 36px !important;
+  margin-bottom: 14px !important;
+  display: block !important;
+}
+
+.fbo-title {
+  font-size: 22px !important;
+  font-weight: 500 !important;
+  color: rgba(255,255,255,0.92) !important;
+  margin-bottom: 8px !important;
+  letter-spacing: -0.01em !important;
+}
+
+.fbo-sub {
+  font-size: 13px !important;
+  color: rgba(255,255,255,0.45) !important;
+  line-height: 1.6 !important;
+  margin-bottom: 18px !important;
+}
+
+.fbo-arabic {
+  font-family: 'Noto Naskh Arabic', 'Traditional Arabic', serif !important;
+  font-size: 17px !important;
+  color: #c9983c !important;
+  direction: rtl !important;
+  line-height: 2 !important;
+  margin-bottom: 8px !important;
+}
+
+.fbo-english {
+  font-size: 12px !important;
+  color: rgba(255,255,255,0.4) !important;
+  font-style: italic !important;
+  line-height: 1.6 !important;
+  margin-bottom: 5px !important;
+}
+
+.fbo-ref {
+  font-size: 11px !important;
+  color: #c9983c !important;
+  font-weight: 500 !important;
+  margin-bottom: 22px !important;
+}
+
+.fbo-btn {
+  display: block !important;
+  width: 100% !important;
+  padding: 11px !important;
+  border-radius: 9px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  margin-bottom: 8px !important;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.fbo-btn-primary {
+  background: #c9983c !important;
+  color: #08080a !important;
+}
+
+.fbo-btn-primary:hover {
+  background: #e8b455 !important;
+}
+
+.fbo-btn-ghost {
+  background: transparent !important;
+  color: rgba(255,255,255,0.35) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+.fbo-btn-ghost:hover {
+  color: rgba(255,255,255,0.6) !important;
+  border-color: rgba(255,255,255,0.2) !important;
+}

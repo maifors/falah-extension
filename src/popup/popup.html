@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Falah OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500&family=Noto+Naskh+Arabic:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --gold: #c9983c; --gold-light: #e8b455; --gold-dim: rgba(201,152,60,0.12);
+  --gold-border: rgba(201,152,60,0.22); --jade: #10b981; --ruby: #ef4444;
+  --amber: #f59e0b; --bg: #0e0e11; --bg-s: #141418; --bg-c: #1a1a1f;
+  --bg-r: #202026;
+  --b1: rgba(255,255,255,0.92); --b2: rgba(255,255,255,0.55); --b3: rgba(255,255,255,0.28);
+  --bm: rgba(255,255,255,0.09);
+}
+body {
+  width: 300px; background: var(--bg);
+  font-family: 'DM Sans', sans-serif; color: var(--b1);
+  font-size: 13px; overflow: hidden;
+}
+.header {
+  background: var(--bg-s); border-bottom: 1px solid rgba(201,152,60,0.18);
+  padding: 12px 16px 10px;
+  display: flex; align-items: center; gap: 10px; position: relative;
+}
+.header::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: linear-gradient(180deg, var(--gold), transparent);
+}
+.h-lantern { filter: drop-shadow(0 0 5px rgba(201,152,60,0.45)); }
+.h-name {
+  font-family: 'Cormorant Garamond', serif; font-size: 20px;
+  font-weight: 500; color: var(--gold-light); letter-spacing: 0.02em; line-height: 1;
+}
+.h-sub { font-size: 9px; color: var(--b3); letter-spacing: 0.1em; text-transform: uppercase; }
+.h-right { margin-left: auto; text-align: right; }
+.h-version { font-size: 9px; color: var(--b3); }
+.auth-status {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 16px; font-size: 10.5px; border-bottom: 1px solid var(--bm);
+}
+.as-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.as-dot.on { background: var(--jade); }
+.as-dot.off { background: var(--b3); }
+.as-dot.demo { background: #a78bfa; box-shadow: 0 0 4px #a78bfa; }
+.as-text { color: var(--b2); flex: 1; }
+.as-action {
+  color: var(--gold); cursor: pointer; font-weight: 500;
+  background: none; border: none; font-family: 'DM Sans', sans-serif; font-size: 10.5px;
+  padding: 2px 6px; border-radius: 4px; transition: all 0.15s;
+}
+.as-action:hover { background: var(--gold-dim); }
+.wallet-mini {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 16px; border-bottom: 1px solid var(--bm);
+  font-size: 11px;
+}
+.wm-label { color: var(--b3); }
+.wm-balance {
+  font-family: 'JetBrains Mono', monospace; color: var(--gold); font-weight: 500;
+}
+.wm-currency { color: var(--b3); font-size: 10px; }
+.verdict-strip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px; border-bottom: 1px solid var(--bm);
+}
+.vs-pill {
+  display: flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 500;
+  border: 1px solid var(--bm);
+}
+.vs-pill.safe { background: rgba(16,185,129,0.1); color: var(--jade); border-color: rgba(16,185,129,0.2); }
+.vs-pill.caution { background: rgba(245,158,11,0.1); color: var(--amber); border-color: rgba(245,158,11,0.2); }
+.vs-pill.warning { background: rgba(239,68,68,0.1); color: var(--ruby); border-color: rgba(239,68,68,0.2); }
+.vs-pill.blocked { background: rgba(239,68,68,0.15); color: var(--ruby); border-color: rgba(239,68,68,0.25); }
+.vs-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.vs-reason { font-size: 10.5px; color: var(--b2); flex: 1; line-height: 1.4; }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 8px 14px; border-bottom: 1px solid var(--bm); }
+.action-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  background: var(--bg-c); border: 1px solid var(--bm); border-radius: 8px;
+  padding: 8px; cursor: pointer; transition: all 0.15s;
+  color: var(--b2); text-decoration: none; font-size: 10px; font-family: 'DM Sans', sans-serif;
+}
+.action-btn:hover { border-color: var(--gold-border); color: var(--gold); background: var(--gold-dim); }
+.action-btn svg { flex-shrink: 0; }
+.prayer-bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 16px; border-bottom: 1px solid var(--bm);
+  font-size: 11px;
+}
+.pb-label { color: var(--b3); flex-shrink: 0; }
+.pb-val { color: var(--gold); font-weight: 500; }
+.pb-time { color: var(--b2); margin-left: 3px; }
+.verse-section { padding: 8px 16px 10px; }
+.v-arabic {
+  font-family: 'Noto Naskh Arabic', serif; font-size: 14px; color: var(--gold);
+  text-align: right; direction: rtl; line-height: 1.8; margin-bottom: 4px;
+}
+.v-en { font-size: 10.5px; color: var(--b2); font-style: italic; line-height: 1.5; margin-bottom: 3px; }
+.v-ref { font-size: 10px; color: var(--gold); font-weight: 500; }
+.popup-footer {
+  border-top: 1px solid var(--bm); padding: 6px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.pf-btn {
+  font-size: 10.5px; color: var(--b3); background: none;
+  border: none; cursor: pointer; padding: 3px 0;
+  font-family: 'DM Sans', sans-serif; transition: color 0.15s;
+}
+.pf-btn:hover { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <svg class="h-lantern" width="26" height="26" viewBox="0 0 40 40" fill="none">
+    <path d="M20 4L26 10H28V30H12V10H14L20 4Z" fill="rgba(201,152,60,0.22)" stroke="#c9983c" stroke-width="1.5"/>
+    <circle cx="20" cy="19" r="4" fill="#c9983c" opacity="0.9"/>
+    <path d="M15 30H25L24 36H16L15 30Z" fill="#c9983c" opacity="0.3"/>
+  </svg>
+  <div>
+    <div class="h-name">Falah OS</div>
+    <div class="h-sub">Shariah Guidance</div>
+  </div>
+  <div class="h-right">
+    <div class="h-version">v2.0.0</div>
+  </div>
+</div>
+
+<div class="auth-status" id="auth-status">
+  <div class="as-dot" id="as-dot"></div>
+  <span class="as-text" id="as-text">Checking auth…</span>
+  <button class="as-action" id="as-action"></button>
+</div>
+
+<div class="wallet-mini" id="wallet-mini" style="display:none">
+  <span class="wm-label">Wallet:</span>
+  <span class="wm-balance" id="wm-balance">—</span>
+  <span class="wm-currency">FLH</span>
+</div>
+
+<div class="verdict-strip" id="verdict-strip">
+  <div class="vs-pill" id="vs-pill">
+    <div class="vs-dot"></div>
+    <span id="vs-label">Analysing…</span>
+  </div>
+  <div class="vs-reason" id="vs-reason">Evaluating current page…</div>
+</div>
+
+<div class="actions">
+  <button class="action-btn" id="btn-toggle-panel">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    Open Panel
+  </button>
+  <button class="action-btn" id="btn-istore">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
+    iStore
+  </button>
+  <button class="action-btn" id="btn-wallet">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 010-4h14v4"/><path d="M3 5v14a2 2 0 002 2h16v-5"/><path d="M18 12a2 2 0 000 4h4v-4z"/></svg>
+    Wallet
+  </button>
+  <button class="action-btn" id="btn-settings">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83"/></svg>
+    Settings
+  </button>
+</div>
+
+<div class="prayer-bar">
+  <span class="pb-label">Next Salah:</span>
+  <span class="pb-val" id="pb-name">—</span>
+  <span class="pb-time" id="pb-time"></span>
+</div>
+
+<div class="verse-section">
+  <div class="v-arabic" id="v-arabic">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
+  <div class="v-en" id="v-en">"In the name of Allah, the Most Gracious, the Most Merciful."</div>
+  <div class="v-ref" id="v-ref">Quran 1:1</div>
+</div>
+
+<div class="popup-footer">
+  <button class="pf-btn" id="btn-open-falah">Open Falah OS ↗</button>
+  <button class="pf-btn" id="btn-reload">Re-analyse</button>
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>
