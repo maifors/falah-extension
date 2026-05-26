@@ -2,42 +2,43 @@
   "manifest_version": 3,
   "name": "Falah OS",
   "short_name": "Falah",
-  "description": "Falah OS — Shariah-compliant browsing with Ummah ID, Wallet, iStore, Zakat, and AI guidance.",
-  "version": "2.0.0",
+  "description": "Falah OS \u2014 Shariah-compliant browsing with Ummah ID, Wallet, iStore, Zakat, and AI guidance.",
+  "version": "2.1.0",
   "default_locale": "en",
-
   "icons": {
-    "16":  "icons/icon16.png",
-    "32":  "icons/icon32.png",
-    "48":  "icons/icon48.png",
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-
   "action": {
     "default_popup": "src/popup/popup.html",
     "default_icon": {
-      "16":  "icons/icon16.png",
-      "32":  "icons/icon32.png",
-      "48":  "icons/icon48.png",
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     },
-    "default_title": "Falah — Shariah Guidance"
+    "default_title": "Falah \u2014 Shariah Guidance"
   },
-
   "background": {
     "service_worker": "src/background/service-worker.js",
     "type": "module"
   },
-
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["src/content/content.js"],
-      "css": ["src/content/content.css"],
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "src/content/content.js"
+      ],
+      "css": [
+        "src/content/content.css"
+      ],
       "run_at": "document_idle"
     }
   ],
-
   "web_accessible_resources": [
     {
       "resources": [
@@ -48,16 +49,21 @@
         "icons/icon16.png",
         "icons/icon32.png",
         "icons/icon48.png",
-        "icons/icon128.png"
+        "icons/icon128.png",
+        "data/halal.json",
+        "data/makruh.json",
+        "data/haram.json",
+        "src/pages/options.html",
+        "src/pages/options.js"
       ],
-      "matches": ["<all_urls>"]
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ],
-
   "side_panel": {
     "default_path": "src/panel/panel.html"
   },
-
   "permissions": [
     "storage",
     "alarms",
@@ -65,24 +71,26 @@
     "activeTab",
     "scripting",
     "tabs",
-    "sidePanel"
+    "sidePanel",
+    "sessions"
   ],
-
   "host_permissions": [
     "<all_urls>",
     "https://app-814845252352.us-central1.run.app/*",
     "http://localhost:3000/*",
     "http://localhost:8000/*"
   ],
-
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   },
-
   "commands": {
     "toggle-panel": {
-      "suggested_key": { "default": "Ctrl+Shift+F", "mac": "MacCtrl+Shift+F" },
+      "suggested_key": {
+        "default": "Ctrl+Shift+F",
+        "mac": "MacCtrl+Shift+F"
+      },
       "description": "Toggle Falah side panel"
     }
-  }
+  },
+  "options_page": "src/pages/options.html"
 }
