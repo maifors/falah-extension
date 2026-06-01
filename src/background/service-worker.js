@@ -1,26 +1,7 @@
 import { FalahApiClient } from './api-client.js';
 
-
-// ── DOMAIN CLASSIFICATION LISTS (v2.1) ─────────────────────────
-// Loaded from data/*.json — used by GET_CLASSIFICATION message handler
-const _domainLists = { halal: [], makruh: [], haram: [] };
-
-async function loadDomainLists() {
-  const files = { halal: 'halal', makruh: 'makruh', haram: 'haram' };
-  for (const [key, name] of Object.entries(files)) {
-    try {
-      const url = chrome.runtime.getURL(`data/${name}.json`);
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      _domainLists[key] = await res.json();
-    } catch (e) {
-      console.warn('[Falah] Could not load domain list:', key, e.message);
-      _domainLists[key] = [];
-    }
-  }
-}
-
-const CLASSIFY_URL = 'https://falah-os.com/.netlify/functions/classify';
+const CLASSIFY_URL = 'https://falah-os.netlify.app/.netlify/functions/classify';
+const HEALTH_URL = 'https://falah-os.netlify.app/.netlify/functions/health';
 const PRAYER_API = 'https://api.aladhan.com/v1/timingsByCity';
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const ALARM_PRAYER = 'falah-prayer-check';
@@ -32,30 +13,26 @@ const BADGE_COLORS = {
 };
 
 const DEFAULT_SETTINGS = {
-  guidanceLevel: 'caution', subbarEnabled: true,
-  prayerNotifications: true, adhanSound: false,
-  city: 'Kuala Lumpur', country: 'Malaysia',
-  haulStart: null
+  guidanceLevel: 'caution', panelOpen: true, subbarEnabled: true,
+  adBlocking: true, trackerBlocking: true, prayerNotifications: true,
+  adhanSound: false, city: 'Kuala Lumpur', country: 'Malaysia',
+  voiceStyle: 'scholar', hctVerification: true
 };
 
 const api = new FalahApiClient();
 
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
   if (reason === 'install') {
-    await chrome.storage.local.set({ settings: DEFAULT_SETTINGS, prayerTimes: null, verdictCache: {} });
+    await chrome.storage.local.set({ settings: DEFAULT_SETTINGS, prayerTimes: null, verdictCache: {}, auth: null });
   }
   await schedulePrayerAlarms();
   await initSidePanel();
-  await loadDomainLists(); // v2.1: load halal/haram/makruh lists
 });
 
 chrome.runtime.onStartup.addListener(async () => {
   await schedulePrayerAlarms();
-  await loadDomainLists(); // v2.1: reload lists on SW restart
+  await restoreAuth();
 });
-
-// v2.1: also load lists immediately on first parse
-loadDomainLists();
 
 async function initSidePanel() {
   try {
@@ -64,23 +41,27 @@ async function initSidePanel() {
   } catch (_) {}
 }
 
+async function restoreAuth() {
+  const { auth } = await chrome.storage.local.get('auth');
+  if (auth?.token) {
+    api.setToken(auth.token);
+  }
+}
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   (async () => {
     try {
       switch (msg.type) {
-
         case 'CLASSIFY_URL': {
           const result = await classifyUrl(msg.url, msg.text || '');
           sendResponse({ ok: true, data: result });
           break;
         }
-
         case 'GET_SETTINGS': {
           const { settings } = await chrome.storage.local.get('settings');
-          sendResponse({ ok: true, data: { ...DEFAULT_SETTINGS, ...(settings || {}) } });
+          sendResponse({ ok: true, data: settings || DEFAULT_SETTINGS });
           break;
         }
-
         case 'SAVE_SETTINGS': {
           const { settings: cur } = await chrome.storage.local.get('settings');
           const merged = { ...DEFAULT_SETTINGS, ...cur, ...msg.settings };
@@ -91,20 +72,18 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           sendResponse({ ok: true });
           break;
         }
-
         case 'GET_PRAYER_TIMES': {
           const { prayerTimes } = await chrome.storage.local.get('prayerTimes');
           if (prayerTimes && isTodaysPrayerData(prayerTimes)) {
             sendResponse({ ok: true, data: prayerTimes });
           } else {
             const { settings } = await chrome.storage.local.get('settings');
-            const s = { ...DEFAULT_SETTINGS, ...(settings || {}) };
+            const s = settings || DEFAULT_SETTINGS;
             const fresh = await fetchAndStorePrayerTimes(s.city, s.country);
             sendResponse({ ok: true, data: fresh });
           }
           break;
         }
-
         case 'GET_VERDICT_CACHE': {
           const { verdictCache } = await chrome.storage.local.get('verdictCache');
           const entry = (verdictCache || {})[msg.url];
@@ -113,13 +92,150 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           } else { sendResponse({ ok: false }); }
           break;
         }
-
         case 'SET_BADGE': {
           await updateBadge(msg.tabId, msg.verdict);
           sendResponse({ ok: true });
           break;
         }
+        case 'HEALTH_CHECK': {
+          const health = await checkHealth();
+          sendResponse({ ok: true, data: health });
+          break;
+        }
 
+        // ── Falah OS API handlers ──
+        case 'FALAH_LOGIN': {
+          const data = await api.login(msg.email, msg.password);
+          if (data?.token) {
+            await chrome.storage.local.set({ auth: { token: data.token, user: data.user } });
+            sendResponse({ ok: true, data: { token: data.token, user: data.user } });
+          } else {
+            sendResponse({ ok: false, error: data?.error || 'Login failed' });
+          }
+          break;
+        }
+        case 'FALAH_DEMO_LOGIN': {
+          const session = api.getDemoSession();
+          api.setToken(session.token);
+          await chrome.storage.local.set({
+            auth: { token: session.token, user: session.user, demo: true },
+            demoSession: session
+          });
+          sendResponse({ ok: true, data: { token: session.token, user: session.user, demo: true } });
+          break;
+        }
+        case 'FALAH_LOGOUT': {
+          api.setToken(null);
+          await chrome.storage.local.remove(['auth', 'demoSession']);
+          sendResponse({ ok: true });
+          break;
+        }
+        case 'FALAH_CHECK_AUTH': {
+          const { auth } = await chrome.storage.local.get('auth');
+          if (auth?.token) {
+            api.setToken(auth.token);
+            sendResponse({ ok: true, data: auth });
+          } else {
+            sendResponse({ ok: false });
+          }
+          break;
+        }
+        case 'FALAH_GET_IDENTITY': {
+          const { auth } = await chrome.storage.local.get('auth');
+          if (!auth?.user?.id) { sendResponse({ ok: false, error: 'Not authenticated' }); break; }
+          const identity = await api.getIdentity(auth.user.id);
+          sendResponse({ ok: !!identity, data: identity });
+          break;
+        }
+        case 'FALAH_CREATE_WALLET': {
+          const { auth } = await chrome.storage.local.get('auth');
+          const userId = msg.userId || auth?.user?.id || 'anonymous';
+          const wallet = await api.createWallet(userId);
+          if (wallet) { sendResponse({ ok: true, data: wallet }); }
+          else { sendResponse({ ok: true, data: api.getMockWallet() }); }
+          break;
+        }
+        case 'FALAH_GET_WALLET': {
+          const { auth, demoSession } = await chrome.storage.local.get(['auth', 'demoSession']);
+          if (auth?.demo && demoSession?.wallet) {
+            sendResponse({ ok: true, data: demoSession.wallet }); break;
+          }
+          const walletId = msg.walletId || auth?.walletId;
+          if (walletId) {
+            const wallet = await api.getWallet(walletId);
+            if (wallet) { sendResponse({ ok: true, data: wallet }); break; }
+          }
+          sendResponse({ ok: true, data: api.getMockWallet() });
+          break;
+        }
+        case 'FALAH_GET_TRANSACTIONS': {
+          const { auth, demoSession } = await chrome.storage.local.get(['auth', 'demoSession']);
+          if (auth?.demo && demoSession?.transactions) {
+            sendResponse({ ok: true, data: demoSession.transactions }); break;
+          }
+          const walletId = msg.walletId || auth?.walletId;
+          if (walletId) {
+            const txs = await api.getWalletTransactions(walletId);
+            if (txs) { sendResponse({ ok: true, data: txs }); break; }
+          }
+          sendResponse({ ok: true, data: api.getMockTransactions() });
+          break;
+        }
+        case 'FALAH_GET_WALLET_STATS': {
+          const { auth } = await chrome.storage.local.get('auth');
+          if (auth?.demo) {
+            sendResponse({ ok: true, data: { totalWallets: 1284, totalTransactions: 15420, volume: '3456789.50', feePercentage: 1.5 } }); break;
+          }
+          const stats = await api.getWalletStats();
+          if (stats) { sendResponse({ ok: true, data: stats }); }
+          else { sendResponse({ ok: true, data: api.getMockWalletStats() }); }
+          break;
+        }
+        case 'FALAH_GET_FEES': {
+          const fees = await api.getFees();
+          sendResponse({ ok: true, data: fees || { feePercentage: 1.5 } });
+          break;
+        }
+        case 'FALAH_GET_CATALOG': {
+          const catalog = await api.getCatalog();
+          if (catalog) { sendResponse({ ok: true, data: catalog }); }
+          else { sendResponse({ ok: true, data: api.getMockCatalog() }); }
+          break;
+        }
+        case 'FALAH_GET_NETWORK_STATUS': {
+          const { auth } = await chrome.storage.local.get('auth');
+          if (auth?.demo) {
+            sendResponse({ ok: true, data: { gateway: 'demo', ummah: 'demo', wallet: 'demo', mocknet: 'demo' } });
+            break;
+          }
+          const status = await api.getNetworkStatus();
+          sendResponse({ ok: true, data: status });
+          break;
+        }
+        case 'FALAH_CALCULATE_ZAKAT': {
+          const wealth = parseFloat(msg.wealth);
+          if (!wealth || wealth <= 0) { sendResponse({ ok: false, error: 'Invalid wealth amount' }); break; }
+          const result = await api.calculateZakat(wealth);
+          if (result) { sendResponse({ ok: true, data: result }); }
+          else { sendResponse({ ok: true, data: api.calculateMockZakat(wealth) }); }
+          break;
+        }
+        case 'FALAH_PAY_ZAKAT': {
+          const { auth } = await chrome.storage.local.get('auth');
+          const result = await api.payZakat(msg.amount, msg.walletId || auth?.walletId);
+          sendResponse({ ok: true, data: result || { status: 'completed', txId: 'mock-' + Date.now() } });
+          break;
+        }
+        case 'FALAH_GET_ZAKAT_HISTORY': {
+          const { auth, demoSession } = await chrome.storage.local.get(['auth', 'demoSession']);
+          if (auth?.demo && demoSession?.zakatHistory) {
+            sendResponse({ ok: true, data: demoSession.zakatHistory }); break;
+          }
+          const userId = auth?.user?.id || 'anonymous';
+          const history = await api.getZakatHistory(userId);
+          sendResponse({ ok: true, data: history || [] });
+          break;
+        }
         case 'OPEN_SIDE_PANEL': {
           try {
             await chrome.sidePanel.open({ windowId: sender.tab?.windowId || msg.windowId });
@@ -127,30 +243,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           sendResponse({ ok: true });
           break;
         }
-
-
-        // ── v2.1: USER SITE CLASSIFICATION ────────────────────────
-        case 'GET_CLASSIFICATION': {
-          if (!msg.hostname) { sendResponse({ ok: false, error: 'hostname required' }); break; }
-          const classification = await getDomainClassification(msg.hostname);
-          sendResponse({ ok: true, data: classification });
-          break;
-        }
-
-        case 'SET_CLASSIFICATION': {
-          if (!msg.hostname || !msg.status) { sendResponse({ ok: false, error: 'hostname and status required' }); break; }
-          await setDomainClassification(msg.hostname, msg.status);
-          sendResponse({ ok: true });
-          break;
-        }
-
-        case 'CLEAR_CLASSIFICATION': {
-          if (!msg.hostname) { sendResponse({ ok: false, error: 'hostname required' }); break; }
-          await clearDomainClassification(msg.hostname);
-          sendResponse({ ok: true });
-          break;
-        }
-
         default:
           sendResponse({ ok: false, error: `Unknown message type: ${msg.type}` });
       }
@@ -171,7 +263,6 @@ chrome.commands.onCommand.addListener(async (command) => {
   }
 });
 
-// ── CLASSIFY ──────────────────────────────────────────────
 async function classifyUrl(url, text) {
   const { verdictCache } = await chrome.storage.local.get('verdictCache');
   const cache = verdictCache || {};
@@ -180,7 +271,7 @@ async function classifyUrl(url, text) {
 
   if (url.startsWith('chrome://') || url.startsWith('chrome-extension://') ||
       url.startsWith('edge://') || url.startsWith('about:') || url === '') {
-    return { verdict: 'safe', reason: 'Browser internal page.', alternatives: [], quran: null };
+    return { verdict: 'safe', reason: 'Browser internal page.', evidence: '', alternatives: [], quran: null };
   }
 
   let result;
@@ -194,10 +285,11 @@ async function classifyUrl(url, text) {
     if (!resp.ok) throw new Error(`API ${resp.status}`);
     result = await resp.json();
   } catch (err) {
+    console.warn('[Falah] API unreachable, using local rules:', err.message);
     result = localClassify(url, text);
   }
 
-  result.quran = getQuranEvidence(result.verdict);
+  result.quran = getQuranEvidence(result.verdict, result.reason);
   cache[url] = { ts: Date.now(), result };
   const keys = Object.keys(cache);
   if (keys.length > 200) {
@@ -208,107 +300,216 @@ async function classifyUrl(url, text) {
   return result;
 }
 
-// Known haram domain lists — catch brands not caught by keyword patterns
-const GAMBLING_DOMAINS = ['williamhill','betvictor','paddypower','ladbrokes','coral','888sport','unibet','draftkings','fanduel','pointsbet','1xbet','bovada','betonline','betclic','betsson','bwin','pokerstars','partypoker','888casino','jackpot','casumo','betmgm','caesars','hardrock','resorts','foxbet'];
-const ADULT_DOMAINS = ['pornhub','xvideos','xhamster','redtube','youporn','livejasmin','chaturbate','cam4','stripchat','brazzers','bangbros','mofos','realitykings','twistys','digitalplayground'];
-const ALCOHOL_DOMAINS = ['heineken','budweiser','jackdaniels','johnniewalker','absolutvodka','smirnoff','coronabeer','guinness','carlsberg','stellaartois','fosters','becks','peroni','asahi','tigerbeer','changbeer','angkorbeer','erdinger','paulaner'];
-
 const LOCAL_RULES = [
-  {
-    test: (url, text) => {
-      const c = (url + ' ' + text).toLowerCase();
-      return GAMBLING_DOMAINS.some(d => c.includes(d)) || /(gambling|casino|bet[0-9a-z]*|betting|poker|slots|lottery|wager|bookie|sportsbook)/i.test(c);
-    },
-    verdict: 'blocked',
-    reason: 'Gambling (Maysir) is explicitly forbidden in Islam. This site appears to facilitate wagering or games of chance.',
-    alternatives: [{ title: 'Halal Entertainment', url: 'https://muslimkids.tv' }, { title: 'Islamic Games', url: 'https://www.islamicfinder.org' }]
-  },
-  {
-    test: (url, text) => {
-      const c = (url + ' ' + text).toLowerCase();
-      return ADULT_DOMAINS.some(d => c.includes(d)) || /(porn|xxx|nude|onlyfans|adult\.content|sex\.video|erotic|hentai|nsfw|camgirl|livecam)/i.test(c);
-    },
-    verdict: 'blocked',
-    reason: 'Explicit or adult content is prohibited in Islam. Lowering the gaze is obligatory (Quran 24:30).',
-    alternatives: [{ title: 'Islamic Content', url: 'https://islamqa.info' }, { title: 'Quran & Sunnah', url: 'https://sunnah.com' }]
-  },
-  {
-    test: (url, text) => {
-      const c = (url + ' ' + text).toLowerCase();
-      return ALCOHOL_DOMAINS.some(d => c.includes(d)) || /(alcohol|beer|wine|whiskey|vodka|liquor|brewery|winery|spirits|bourbon|champagne|prosecco|gin|rum|tequila|brandy|mead|cider|lager|ale|draught)/i.test(c);
-    },
-    verdict: 'warning',
-    reason: 'This page relates to intoxicants (Khamr), which are explicitly prohibited in Islam (Quran 5:90).',
-    alternatives: [{ title: 'Halal Beverages', url: 'https://www.halalzilla.com' }, { title: 'Islamic Diet Guide', url: 'https://www.islamicfinder.org' }]
-  },
-  {
-    test: (url, text) => /(riba|interest[- ]rate|APR|payday[- ]loan|usury|loan[- ]shark|high[- ]interest|subprime|predatory[- ]lend)/i.test(url + ' ' + text),
-    verdict: 'caution',
-    reason: 'This page may involve riba (interest/usury), which is forbidden in Islam. Seek halal financing alternatives.',
-    alternatives: [{ title: 'Islamic Finance', url: 'https://www.islamic-relief.org.uk' }, { title: 'Wahed Invest', url: 'https://wahedinvest.com' }]
-  },
-  {
-    test: (url, text) => /(pork|pig meat|swine|bacon|ham(?!as)|lard|pork gelatin|haram ingredient|non-halal)/i.test(url + ' ' + text),
-    verdict: 'caution',
-    reason: 'This page may reference pork or haram food ingredients. Verify halal certification before consuming.',
-    alternatives: [{ title: 'Halal Food Guide', url: 'https://www.halalfoodauthority.com' }, { title: 'JAKIM Halal', url: 'https://www.halal.gov.my' }]
-  },
-  {
-    test: (url, text) => /(escort|prostitut|brothel|strip[- ]club|hookup|sex[- ]work|sugar[- ]dad|sugar[- ]mom)/i.test(url + ' ' + text),
-    verdict: 'blocked',
-    reason: 'This page appears to involve immorality (fahisha). Islam strictly forbids these activities.',
-    alternatives: [{ title: 'Marriage in Islam', url: 'https://islamqa.info/en/answers/2127' }]
-  },
-  {
-    test: (url, text) => /(occult|witchcraft|tarot|ouija|astrology[- ]reading|fortune[- ]tell|black[- ]magic|sihr)/i.test(url + ' ' + text),
-    verdict: 'warning',
-    reason: 'This page involves occult or superstitious practices prohibited in Islam (seeking knowledge only from Allah).',
-    alternatives: [{ title: 'Islamic Beliefs', url: 'https://islamqa.info' }]
-  }
+  { pattern: /\b(gambling|casino|bet|betting|poker|slots|lottery|wager|bookie)\b/i, verdict: 'blocked', reason: 'Gambling (Maysir) is explicitly prohibited in Islam.', evidence: 'Matched gambling keywords', alternatives: [{ title: 'Halal Entertainment', url: 'https://muslimkids.tv' }] },
+  { pattern: /\b(porn|xxx|nude|onlyfans|adult\.content|sex\.video)\b/i, verdict: 'blocked', reason: 'Explicit content is prohibited in Islam.', evidence: 'Matched adult content keywords', alternatives: [{ title: 'Islamic content', url: 'https://islamqa.info' }] },
+  { pattern: /\b(alcohol|beer|wine|whiskey|vodka|liquor|brewery|winery)\b/i, verdict: 'warning', reason: 'Intoxicants (Khamr) are prohibited in Islam.', evidence: 'Matched alcohol-related keywords', alternatives: [{ title: 'Halal Beverages', url: 'https://www.halalzilla.com' }] },
+  { pattern: /\b(riba|interest\.rate|APR|payday\.loan|usury|loan\.shark)\b/i, verdict: 'caution', reason: 'This page may contain riba (interest-based) financial products.', evidence: 'Matched riba-related financial terms', alternatives: [{ title: 'Islamic Finance', url: 'https://www.islamic-relief.org.uk' }] },
+  { pattern: /\b(pork|pig|swine|bacon|ham|lard|gelatin|haram\.ingredient)\b/i, verdict: 'caution', reason: 'This page may reference pork or haram ingredients.', evidence: 'Matched prohibited food keywords', alternatives: [{ title: 'Halal Food Guide', url: 'https://www.halalfoodauthority.com' }] }
 ];
 
 function localClassify(url, text) {
+  const combined = (url + ' ' + text).toLowerCase();
   for (const rule of LOCAL_RULES) {
-    if (rule.test(url, text)) {
-      return { verdict: rule.verdict, reason: rule.reason, alternatives: rule.alternatives };
+    if (rule.pattern.test(combined)) {
+      return { verdict: rule.verdict, reason: rule.reason, evidence: rule.evidence, alternatives: rule.alternatives };
     }
   }
-  return { verdict: 'safe', reason: 'No concerns detected. May Allah bless your browsing.', alternatives: [] };
+  return { verdict: 'safe', reason: 'No concerns detected. May Allah guide your journey.', evidence: 'Clean content scan.', alternatives: [] };
 }
 
+// ── Whisper Engine Evidence Bank ──────────────────────────────────────────────
+// Each entry carries: arabic text, English translation, reference, and a
+// briefExplanation explaining WHY this grade was assigned. Entries are
+// organised by verdict level and then by topic keyword so getQuranEvidence()
+// can pick the most contextually relevant citation.
 const QURAN_EVIDENCE = {
-  safe: [
-    { arabic: 'كُلُوا مِمَّا رَزَقَكُمُ اللَّهُ حَلَالًا طَيِّبًا', english: 'Eat of what Allah has provided for you as lawful and good.', ref: 'Quran 16:114' },
-    { arabic: 'وَمَا تَوْفِيقِي إِلَّا بِاللَّهِ', english: 'My success is only through Allah.', ref: 'Quran 11:88' }
-  ],
-  caution: [
-    { arabic: 'وَذَرُوا مَا بَقِيَ مِنَ الرِّبَا', english: 'And leave what remains of riba.', ref: 'Quran 2:278' }
-  ],
-  warning: [
-    { arabic: 'وَلَا تَقْرَبُوا الْفَوَاحِشَ', english: 'Do not approach immoralities.', ref: 'Quran 6:151' }
-  ],
-  blocked: [
-    { arabic: 'إِنَّمَا الْخَمْرُ وَالْمَيْسِرُ وَالْأَنصَابُ وَالْأَزْلَامُ رِجْسٌ مِّنْ عَمَلِ الشَّيْطَانِ', english: 'Intoxicants, gambling, idols and divining arrows are defilement from the work of Satan.', ref: 'Quran 5:90' }
-  ]
+  safe: {
+    default: [
+      {
+        arabic: 'كُلُوا مِمَّا رَزَقَكُمُ اللَّهُ حَلَالًا طَيِّبًا',
+        english: 'Eat of what Allah has provided for you as lawful and good.',
+        ref: 'Quran 16:114',
+        briefExplanation: 'This page has been assessed as permissible (halal). No content that conflicts with Islamic principles was detected. You may browse freely, but always remain mindful of your intentions (niyyah).'
+      },
+      {
+        arabic: 'وَمَا تَوْفِيقِي إِلَّا بِاللَّهِ',
+        english: 'My success is only through Allah.',
+        ref: 'Quran 11:88',
+        briefExplanation: 'No Islamically problematic content was found on this page. The Whisper engine rates it GREEN — permissible for browsing. Remember that all beneficial knowledge comes from Allah.'
+      },
+      {
+        arabic: 'الحَلَالُ بَيِّنٌ وَالحَرَامُ بَيِّنٌ',
+        english: 'The halal is clear and the haram is clear.',
+        ref: 'Hadith — Sahih Bukhari 52',
+        briefExplanation: 'The Whisper engine found this content to be clean and within Islamic boundaries. This GREEN rating means you can engage with the material without known Shariah concerns.'
+      }
+    ]
+  },
+
+  caution: {
+    riba: [
+      {
+        arabic: 'يَا أَيُّهَا الَّذِينَ آمَنُوا اتَّقُوا اللَّهَ وَذَرُوا مَا بَقِيَ مِنَ الرِّبَا',
+        english: 'O you who believe! Fear Allah and give up what remains of riba, if you are indeed believers.',
+        ref: 'Quran 2:278',
+        briefExplanation: 'This page is rated AMBER because it may contain interest-based (riba) financial content. Riba is explicitly prohibited in Islam. Review any financial terms carefully and consider halal alternatives before committing.'
+      },
+      {
+        arabic: 'وَأَحَلَّ اللَّهُ الْبَيْعَ وَحَرَّمَ الرِّبَا',
+        english: 'Allah has permitted trade and forbidden riba.',
+        ref: 'Quran 2:275',
+        briefExplanation: 'AMBER rating: This page references financial products that may involve interest (riba). Islam permits trade but forbids usury. Proceed with caution and verify any financial commitment against Islamic finance principles.'
+      }
+    ],
+    food: [
+      {
+        arabic: 'يَا أَيُّهَا النَّاسُ كُلُوا مِمَّا فِي الْأَرْضِ حَلَالًا طَيِّبًا',
+        english: 'O mankind! Eat from what is lawful and good on earth.',
+        ref: 'Quran 2:168',
+        briefExplanation: 'AMBER rating: This page may reference pork, gelatin, or other potentially haram food ingredients. Islam requires Muslims to consume only halal and tayyib (pure) food. Check ingredient lists and halal certifications before purchasing.'
+      },
+      {
+        arabic: 'حُرِّمَتْ عَلَيْكُمُ الْمَيْتَةُ وَالدَّمُ وَلَحْمُ الْخِنزِيرِ',
+        english: 'Forbidden to you are carrion, blood, and pork.',
+        ref: 'Quran 5:3',
+        briefExplanation: 'AMBER rating: This page appears to reference prohibited foods such as pork or its derivatives. The Whisper engine urges caution — verify product ingredients and halal status before consumption or purchase.'
+      }
+    ],
+    default: [
+      {
+        arabic: 'يَا أَيُّهَا الَّذِينَ آمَنُوا اتَّقُوا اللَّهَ',
+        english: 'O you who believe, fear Allah.',
+        ref: 'Quran 3:102',
+        briefExplanation: 'This page has been rated AMBER — proceed with awareness. The Whisper engine detected content that may require careful consideration from an Islamic perspective. Review the content mindfully before engaging.'
+      },
+      {
+        arabic: 'إِنَّ اللَّهَ يَأْمُرُ بِالْعَدْلِ وَالْإِحْسَانِ',
+        english: 'Indeed, Allah commands justice, good conduct, and generosity.',
+        ref: 'Quran 16:90',
+        briefExplanation: 'AMBER rating: The Whisper engine has flagged this page for cautious review. Some content here may not fully align with Islamic values. Reflect on what you engage with and ensure your actions remain consistent with justice and good conduct (ihsan).'
+      }
+    ]
+  },
+
+  warning: {
+    alcohol: [
+      {
+        arabic: 'يَا أَيُّهَا الَّذِينَ آمَنُوا إِنَّمَا الْخَمْرُ وَالْمَيْسِرُ رِجْسٌ مِّنْ عَمَلِ الشَّيْطَانِ فَاجْتَنِبُوهُ',
+        english: 'O believers! Intoxicants and gambling are but defilement from the work of Satan, so avoid them.',
+        ref: 'Quran 5:90',
+        briefExplanation: 'RED rating: This page promotes or sells alcohol (khamr), which is explicitly forbidden in Islam. The Quran commands believers to completely avoid intoxicants. The Whisper engine strongly advises leaving this page.'
+      },
+      {
+        arabic: 'كُلُّ مُسْكِرٍ خَمْرٌ وَكُلُّ خَمْرٍ حَرَامٌ',
+        english: 'Every intoxicant is khamr, and every khamr is haram.',
+        ref: 'Hadith — Sahih Muslim 2003',
+        briefExplanation: 'RED rating: The Whisper engine detected alcohol-related content. The Prophet ﷺ declared all intoxicants forbidden regardless of quantity or form. Purchasing, promoting, or consuming alcohol is prohibited. Please navigate away.'
+      }
+    ],
+    default: [
+      {
+        arabic: 'وَلَا تَقْرَبُوا الْفَوَاحِشَ مَا ظَهَرَ مِنْهَا وَمَا بَطَنَ',
+        english: 'Do not approach immoralities — what is apparent and what is concealed.',
+        ref: 'Quran 6:151',
+        briefExplanation: 'RED rating: The Whisper engine has identified content on this page that is Islamically problematic. Islam warns against even approaching (let alone engaging with) things that lead to immorality. Exercise caution and consider navigating away.'
+      },
+      {
+        arabic: 'إِنَّ الَّذِينَ يُحِبُّونَ أَن تَشِيعَ الْفَاحِشَةُ فِي الَّذِينَ آمَنُوا لَهُمْ عَذَابٌ أَلِيمٌ',
+        english: 'Those who love that immorality should spread among the believers will have a painful punishment.',
+        ref: 'Quran 24:19',
+        briefExplanation: 'RED rating: This page contains content that propagates immorality or indecency. Islam firmly prohibits engaging with such material. The Whisper engine strongly recommends leaving this page immediately.'
+      }
+    ]
+  },
+
+  blocked: {
+    gambling: [
+      {
+        arabic: 'إِنَّمَا الْخَمْرُ وَالْمَيْسِرُ وَالْأَنصَابُ وَالْأَزْلَامُ رِجْسٌ مِّنْ عَمَلِ الشَّيْطَانِ فَاجْتَنِبُوهُ لَعَلَّكُمْ تُفْلِحُونَ',
+        english: "Intoxicants, gambling, idols, and divining arrows are defilement from Satan's work — avoid them so you may succeed.",
+        ref: 'Quran 5:90',
+        briefExplanation: 'BLOCKED: This page has been identified as a gambling (maysir) site. Gambling is explicitly listed alongside intoxicants as among the gravest prohibitions in Islam — it corrupts wealth, destroys families, and breeds enmity. The Whisper engine has blocked access in accordance with your Strict guidance setting.'
+      },
+      {
+        arabic: 'إِنَّمَا يُرِيدُ الشَّيْطَانُ أَن يُوقِعَ بَيْنَكُمُ الْعَدَاوَةَ وَالْبَغْضَاءَ فِي الْخَمْرِ وَالْمَيْسِرِ',
+        english: 'Satan only wants to cause between you animosity and hatred through intoxicants and gambling.',
+        ref: 'Quran 5:91',
+        briefExplanation: 'BLOCKED: Gambling (maysir) is haram. Allah explains its purpose — it sows hatred and enmity among people. This page has been blocked to protect you from engaging with prohibited financial games of chance.'
+      }
+    ],
+    adult: [
+      {
+        arabic: 'قُل لِّلْمُؤْمِنِينَ يَغُضُّوا مِنْ أَبْصَارِهِمْ وَيَحْفَظُوا فُرُوجَهُمْ',
+        english: 'Tell the believing men to lower their gaze and guard their chastity.',
+        ref: 'Quran 24:30',
+        briefExplanation: 'BLOCKED: This page contains explicit adult content. Islam commands believers to guard their gaze and protect their chastity. Such content corrupts the heart and distances one from Allah. The Whisper engine has blocked access to safeguard your spiritual wellbeing.'
+      },
+      {
+        arabic: 'إِنَّ السَّمْعَ وَالْبَصَرَ وَالْفُؤَادَ كُلُّ أُولَٰئِكَ كَانَ عَنْهُ مَسْئُولًا',
+        english: 'Indeed, the hearing, the sight, and the heart — about all of these you will be questioned.',
+        ref: 'Quran 17:36',
+        briefExplanation: 'BLOCKED: Explicit content has been detected. We will be held accountable for what our eyes see and what our hearts dwell on. This page has been blocked to help you maintain accountability before Allah on the Day of Judgement.'
+      }
+    ],
+    default: [
+      {
+        arabic: 'وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا',
+        english: 'And whoever fears Allah — He will make for them a way out.',
+        ref: 'Quran 65:2',
+        briefExplanation: 'BLOCKED: The Whisper engine has determined this page contains haram content and has blocked it. Whoever maintains taqwa (God-consciousness) will find that Allah opens better paths. Trust in His guidance and navigate to something beneficial.'
+      },
+      {
+        arabic: 'وَلَا تَقْرَبُوا الْفَوَاحِشَ مَا ظَهَرَ مِنْهَا وَمَا بَطَنَ',
+        english: 'Do not approach immoralities — what is apparent and what is concealed.',
+        ref: 'Quran 6:151',
+        briefExplanation: 'BLOCKED: This page has been blocked by Falah Whisper. Islam forbids even approaching things that lead to sin. By blocking this content, Falah is helping you maintain the boundaries Allah has set for our protection and wellbeing.'
+      }
+    ]
+  }
 };
 
-function getQuranEvidence(verdict) {
+/**
+ * getQuranEvidence — Whisper Engine core selector.
+ * Picks the most contextually relevant Quran/Hadith citation AND briefExplanation
+ * based on the verdict colour AND the reason text returned by the classifier.
+ *
+ * @param {string} verdict  - 'safe' | 'caution' | 'warning' | 'blocked'
+ * @param {string} reason   - The reason string from the classifier
+ * @returns {{ arabic, english, ref, briefExplanation }}
+ */
+function getQuranEvidence(verdict, reason) {
   const bank = QURAN_EVIDENCE[verdict] || QURAN_EVIDENCE.safe;
-  return bank[Math.floor(Math.random() * bank.length)];
+  const r = (reason || '').toLowerCase();
+
+  // Topic-keyword matching for the most relevant citation
+  let pool = null;
+  if (verdict === 'blocked' || verdict === 'warning') {
+    if (/gambl|maysir|casino|bet|poker|slot|lottery/.test(r)) pool = bank.gambling;
+    else if (/porn|adult|explicit|nude|xxx|onlyfans|sex/.test(r)) pool = bank.adult;
+    else if (/alcohol|beer|wine|khamr|whiskey|liquor|intoxicant/.test(r)) pool = bank.alcohol;
+  }
+  if (verdict === 'caution') {
+    if (/riba|interest|usury|apr|loan|payday/.test(r)) pool = bank.riba;
+    else if (/pork|pig|swine|bacon|ham|lard|gelatin|food|ingredient/.test(r)) pool = bank.food;
+  }
+
+  // Fallback to the verdict's default pool, then to safe default
+  if (!pool || !pool.length) pool = bank.default || QURAN_EVIDENCE.safe.default;
+
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
-// ── BADGE ─────────────────────────────────────────────────
 async function updateBadge(tabId, verdict) {
   if (!tabId) return;
   const color = BADGE_COLORS[verdict] || BADGE_COLORS.loading;
-  const text = verdict === 'safe' ? '✓' : verdict === 'caution' ? '!' : (verdict === 'blocked' || verdict === 'warning') ? '✕' : '?';
+  const text = verdict === 'safe' ? '✓' : verdict === 'caution' ? '!' : verdict === 'blocked' || verdict === 'warning' ? '✕' : '?';
   try {
     await chrome.action.setBadgeBackgroundColor({ color, tabId });
     await chrome.action.setBadgeText({ text, tabId });
   } catch (_) {}
 }
 
-// ── PRAYER TIMES ──────────────────────────────────────────
 async function fetchAndStorePrayerTimes(city, country) {
   try {
     const today = new Date();
@@ -318,30 +519,21 @@ async function fetchAndStorePrayerTimes(city, country) {
     if (!resp.ok) throw new Error(`Prayer API ${resp.status}`);
     const json = await resp.json();
     const timings = json.data?.timings;
-    const hijri = json.data?.date?.hijri;
-    if (!timings) throw new Error('No timings');
-    const prayerTimes = {
-      date: dateStr, city, country,
-      Fajr: timings.Fajr, Sunrise: timings.Sunrise, Dhuhr: timings.Dhuhr,
-      Asr: timings.Asr, Maghrib: timings.Maghrib, Isha: timings.Isha,
-      hijri: hijri ? { day: hijri.day, month: hijri.month, year: hijri.year } : null
-    };
+    if (!timings) throw new Error('No timings in response');
+    const prayerTimes = { date: dateStr, city, country, Fajr: timings.Fajr, Sunrise: timings.Sunrise, Dhuhr: timings.Dhuhr, Asr: timings.Asr, Maghrib: timings.Maghrib, Isha: timings.Isha };
     await chrome.storage.local.set({ prayerTimes });
     return prayerTimes;
   } catch (err) {
     console.warn('[Falah] Prayer API failed:', err.message);
-    return {
-      date: 'fallback', city, country,
-      Fajr: '05:30', Sunrise: '07:00', Dhuhr: '13:15',
-      Asr: '16:30', Maghrib: '19:15', Isha: '20:30', hijri: null
-    };
+    return { date: 'fallback', city, country, Fajr: '05:30', Sunrise: '07:00', Dhuhr: '13:15', Asr: '16:30', Maghrib: '19:15', Isha: '20:30' };
   }
 }
 
 function isTodaysPrayerData(data) {
-  if (!data?.date || data.date === 'fallback') return false;
+  if (!data || !data.date || data.date === 'fallback') return false;
   const today = new Date();
-  return data.date === `${today.getDate()}-${today.getMonth() + 1}-${today.getFullYear()}`;
+  const todayStr = `${today.getDate()}-${today.getMonth() + 1}-${today.getFullYear()}`;
+  return data.date === todayStr;
 }
 
 async function schedulePrayerAlarms() {
@@ -351,21 +543,22 @@ async function schedulePrayerAlarms() {
 }
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
-  if (alarm.name === ALARM_PRAYER) await checkPrayerNotification();
-  else if (alarm.name === ALARM_REFRESH) {
+  if (alarm.name === ALARM_PRAYER) {
+    await checkPrayerNotification();
+  } else if (alarm.name === ALARM_REFRESH) {
     const { settings } = await chrome.storage.local.get('settings');
-    const s = { ...DEFAULT_SETTINGS, ...(settings || {}) };
+    const s = settings || DEFAULT_SETTINGS;
     await fetchAndStorePrayerTimes(s.city, s.country);
   }
 });
 
 async function checkPrayerNotification() {
   const { settings, prayerTimes, lastNotified } = await chrome.storage.local.get(['settings', 'prayerTimes', 'lastNotified']);
-  const s = { ...DEFAULT_SETTINGS, ...(settings || {}) };
+  const s = settings || DEFAULT_SETTINGS;
   if (!s.prayerNotifications || !prayerTimes) return;
   const now = new Date();
   const hhmm = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  const prayers = ['Fajr','Dhuhr','Asr','Maghrib','Isha'];
+  const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
   for (const name of prayers) {
     const t = (prayerTimes[name] || '').substring(0, 5);
     if (t === hhmm && lastNotified !== `${name}-${hhmm}`) {
@@ -381,7 +574,16 @@ async function checkPrayerNotification() {
   }
 }
 
-// ── TAB CLASSIFY ─────────────────────────────────────────
+async function checkHealth() {
+  try {
+    const resp = await fetch(HEALTH_URL, { signal: AbortSignal.timeout(5000) });
+    if (!resp.ok) return { status: 'degraded', version: '?' };
+    return await resp.json();
+  } catch {
+    return { status: 'offline', version: '?' };
+  }
+}
+
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status !== 'complete') return;
   if (!tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://') || tab.url.startsWith('edge://')) return;
@@ -395,66 +597,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     await updateBadge(tabId, verdict.verdict);
     chrome.tabs.sendMessage(tabId, { type: 'VERDICT_READY', verdict }).catch(() => {});
   } catch (err) {
+    console.error('[Falah SW] Tab classify error:', err);
     await updateBadge(tabId, 'error');
   }
 });
-
-
-// ── v2.1: DOMAIN CLASSIFICATION HELPERS ───────────────────────────────────
-
-/**
- * Get Shariah classification for a hostname.
- * Priority: session cache → user override → domain list → unknown
- */
-async function getDomainClassification(hostname) {
-  // 1. Session cache (fast path for recently seen domains)
-  try {
-    const sessionData = await chrome.storage.session.get(hostname);
-    if (sessionData[hostname]) return sessionData[hostname];
-  } catch (_) { /* chrome.storage.session may not be available in all contexts */ }
-
-  // 2. User-defined override (synced across devices)
-  const { user_classifications = {} } = await chrome.storage.sync.get('user_classifications').catch(() => ({}));
-  if (user_classifications[hostname]) {
-    const entry = user_classifications[hostname];
-    return { status: entry.status, reason: 'Classified by you' };
-  }
-
-  // 3. Built-in domain lists
-  const domain = hostname.replace(/^www\./, '');
-  if (_domainLists.haram.some(d => domain.includes(d))) {
-    return { status: 'haram', reason: 'On Falah haram list' };
-  }
-  if (_domainLists.makruh.some(d => domain.includes(d))) {
-    return { status: 'makruh', reason: 'On Falah makruh list' };
-  }
-  if (_domainLists.halal.some(d => domain.includes(d))) {
-    return { status: 'halal', reason: 'On Falah halal list' };
-  }
-
-  return { status: 'unknown', reason: 'Not in Falah database' };
-}
-
-/**
- * Save a user-defined classification for a hostname.
- */
-async function setDomainClassification(hostname, status) {
-  const { user_classifications = {} } = await chrome.storage.sync.get('user_classifications').catch(() => ({}));
-  user_classifications[hostname] = { status, timestamp: Date.now() };
-  await chrome.storage.sync.set({ user_classifications }).catch(() => {});
-  try {
-    await chrome.storage.session.set({ [hostname]: { status, reason: 'Classified by you' } });
-  } catch (_) {}
-}
-
-/**
- * Remove a user-defined classification, restoring list/unknown behaviour.
- */
-async function clearDomainClassification(hostname) {
-  const { user_classifications = {} } = await chrome.storage.sync.get('user_classifications').catch(() => ({}));
-  delete user_classifications[hostname];
-  await chrome.storage.sync.set({ user_classifications }).catch(() => {});
-  try {
-    await chrome.storage.session.remove(hostname);
-  } catch (_) {}
-}

@@ -65,14 +65,24 @@
       settings = msg.settings;
       updateSubbarVisibility();
     }
+    if (msg.type === 'TOGGLE_WIDGETS') toggleWidgetConfig();
   });
+
+  function toggleWidgetConfig() {
+    if (configPanel) {
+      configPanel.classList.toggle('fw-config-open');
+      updateConfigPanel();
+    } else {
+      initWidgetSystem();
+    }
+  }
 
   // ── Apply Verdict ─────────────────────────────────────────────────────────
   function applyVerdict(verdict) {
     currentVerdict = verdict;
     updateSubbar(verdict);
     if (panelIframe) {
-      panelIframe.contentWindow?.postMessage({ type: 'VERDICT', verdict }, '*');
+      panelIframe.contentWindow?.postMessage({ type: 'VERDICT', verdict }, chrome.runtime.getURL('').replace(/\/$/, ''));
     }
 
     const { guidanceLevel } = settings;
@@ -138,7 +148,20 @@
 
     const quran = verdict.quran;
     if (quran) {
-      evEl.innerHTML = `<em>${quran.ref}</em> — ${quran.english.substring(0, 80)}${quran.english.length > 80 ? '…' : ''}`;
+      evEl.textContent = '';
+      // Prefer the brief explanation; fall back to the verse reference + snippet
+      if (quran.briefExplanation) {
+        const brief = quran.briefExplanation;
+        const em = document.createElement('em');
+        em.textContent = quran.ref + ': ';
+        evEl.appendChild(em);
+        evEl.appendChild(document.createTextNode(brief.substring(0, 120) + (brief.length > 120 ? '…' : '')));
+      } else {
+        const em = document.createElement('em');
+        em.textContent = quran.ref;
+        evEl.appendChild(em);
+        evEl.appendChild(document.createTextNode(' — ' + quran.english.substring(0, 80) + (quran.english.length > 80 ? '…' : '')));
+      }
     } else {
       evEl.textContent = verdict.reason?.substring(0, 100) || '';
     }
@@ -178,7 +201,7 @@
 
     panelIframe = document.createElement('iframe');
     panelIframe.id = 'falah-panel-iframe';
-    panelIframe.src = chrome.runtime.getURL('src/panel/panel.html');
+    panelIframe.src = chrome.runtime.getURL('src/panel/panel.html') + '?origin=' + encodeURIComponent(location.origin);
     panelIframe.setAttribute('allowtransparency', 'true');
 
     panelEl.appendChild(panelIframe);
@@ -193,7 +216,7 @@
   }
 
   function handlePanelMessage(e) {
-    if (!e.data || e.data.source !== 'falah-panel') return;
+    if (!e.data || e.source !== panelIframe?.contentWindow) return;
     switch (e.data.type) {
       case 'CLOSE_PANEL':    closePanel(); break;
       case 'SAVE_SETTINGS':  saveSettings(e.data.settings); break;
@@ -210,7 +233,7 @@
     document.documentElement.style.setProperty('--falah-panel-w', PANEL_WIDTH);
     panelOpen = true;
     if (currentVerdict && panelIframe) {
-      panelIframe.contentWindow?.postMessage({ type: 'VERDICT', verdict: currentVerdict }, '*');
+      panelIframe.contentWindow?.postMessage({ type: 'VERDICT', verdict: currentVerdict }, chrome.runtime.getURL('').replace(/\/$/, ''));
     }
   }
 
@@ -274,319 +297,547 @@
     document.documentElement.style.setProperty('--falah-panel-w', '0px');
   }
 
+  // ── Widget System ─────────────────────────────────────────────────────────
+  // Floating, draggable widgets with persistent position/state.
+  const WIDGET_DEFS = [
+    { id: 'prayer-times',  title: 'Prayer Times',    icon: '\u{1F54C}', defaultState: 'minimized' },
+    { id: 'halal-checker', title: 'Halal Checker',   icon: '\u2705',    defaultState: 'hidden'    },
+    { id: 'wallet-mini',   title: 'Wallet Balance',  icon: '\u{1F4B0}', defaultState: 'minimized' },
+    { id: 'zakat-quick',   title: 'Zakat Calculator',icon: '\u{1F932}', defaultState: 'hidden'    },
+    { id: 'verse',         title: 'Verse of the Day', icon: '\u{1F4D6}', defaultState: 'minimized' },
+  ];
+
+  const DAILY_VERSES = [
+    { arabic: '\u0648\u064E\u0645\u064E\u0627 \u062A\u064E\u0648\u0652\u0641\u0650\u064A\u0642\u0650\u064A \u0625\u0650\u0644\u0651\u064E\u0627 \u0628\u0650\u0627\u0644\u0644\u0651\u064E\u0647\u0650', english: 'My success is only through Allah.', ref: 'Quran 11:88' },
+    { arabic: '\u0625\u0650\u0646\u0651\u064E \u0645\u064E\u0639\u064E \u0627\u0644\u0652\u0639\u064F\u0633\u0652\u0631\u0650 \u064A\u064F\u0633\u0652\u0631\u064B\u0627', english: 'Indeed, with hardship will be ease.', ref: 'Quran 94:6' },
+    { arabic: '\u0648\u064E\u0644\u064E\u0630\u0650\u0643\u0652\u0631\u064F \u0627\u0644\u0644\u0651\u064E\u0647\u0650 \u0623\u064E\u0643\u0652\u0628\u064E\u0631\u064F', english: 'The remembrance of Allah is greater.', ref: 'Quran 29:45' },
+    { arabic: '\u0625\u0650\u0646\u0651\u064E \u0627\u0644\u0644\u0651\u064E\u0647\u064E \u0645\u064E\u0639\u064E \u0627\u0644\u0635\u0651\u064E\u0627\u0628\u0650\u0631\u0650\u064A\u0646\u064E', english: 'Indeed, Allah is with the patient.', ref: 'Quran 2:153' },
+    { arabic: '\u0648\u064E\u0642\u064F\u0644\u0652 \u0631\u0651\u064E\u0628\u0650\u0651 \u0632\u0650\u062F\u0652\u0646\u0650\u064A \u0639\u0650\u0644\u0652\u0645\u064B\u0627', english: 'And say: My Lord, increase me in knowledge.', ref: 'Quran 20:114' },
+  ];
+
+  let widgetState = null;
+  let widgetEls = {};
+  let widgetTimers = {};
+  let widgetToggle = null;
+  let configPanel = null;
+
+  async function initWidgetSystem() {
+    widgetState = await loadWidgetState();
+    const isVisible = Object.values(widgetState).some(s => s.state !== 'hidden');
+    if (!isVisible) { buildWidgetToggle(); return; }
+    for (const def of WIDGET_DEFS) {
+      if (widgetState[def.id].state !== 'hidden') buildWidgetEl(def);
+    }
+    buildWidgetToggle();
+    startWidgetRefresh();
+  }
+
+  function loadWidgetState() {
+    return new Promise(resolve => {
+      chrome.storage.local.get('widgetStates', res => {
+        const saved = res.widgetStates || {};
+        const state = {};
+        const stackX = window.innerWidth - 290;
+        let stackY = 80;
+        for (const def of WIDGET_DEFS) {
+          const prev = saved[def.id];
+          if (prev && typeof prev.x === 'number' && typeof prev.y === 'number') {
+            state[def.id] = { state: prev.state || def.defaultState, x: prev.x, y: prev.y };
+          } else {
+            state[def.id] = { state: def.defaultState, x: stackX, y: stackY };
+            stackY += 60;
+          }
+        }
+        resolve(state);
+      });
+    });
+  }
+
+  function saveWidgetState() {
+    chrome.storage.local.set({ widgetStates: widgetState });
+  }
+
+  function buildWidgetEl(def) {
+    const s = widgetState[def.id];
+    if (!s) return;
+    const el = document.createElement('div');
+    el.id = 'falah-widget-' + def.id;
+    el.className = 'falah-widget' + (s.state === 'minimized' ? ' fw-minimized' : '') + (s.state === 'hidden' ? ' fw-hidden' : '');
+    el.style.top = s.y + 'px';
+    el.style.left = s.x + 'px';
+    el.dataset.widgetId = def.id;
+
+    el.innerHTML =
+      '<div class="fw-header">' +
+        '<span class="fw-icon">' + def.icon + '</span>' +
+        '<span class="fw-title">' + def.title + '</span>' +
+        '<div class="fw-actions">' +
+          '<button class="fw-btn fw-sticky-btn' + (s.state === 'sticky' ? ' fw-sticky-active' : '') + '" title="Toggle sticky mode">\uD83D\uDCCC</button>' +
+          '<button class="fw-btn fw-min-btn" title="Minimize">\u2212</button>' +
+          '<button class="fw-btn fw-hide-btn" title="Hide">&times;</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="fw-body"></div>';
+
+    const body = el.querySelector('.fw-body');
+    renderWidgetContent(def, body);
+
+    setupWidgetDrag(el, def);
+    el.querySelector('.fw-sticky-btn').addEventListener('click', e => { e.stopPropagation(); toggleWidgetSticky(def.id); });
+    el.querySelector('.fw-min-btn').addEventListener('click', e => { e.stopPropagation(); minimizeWidget(def.id); });
+    el.querySelector('.fw-hide-btn').addEventListener('click', e => { e.stopPropagation(); hideWidget(def.id); });
+
+    document.body.appendChild(el);
+    widgetEls[def.id] = el;
+  }
+
+  function renderWidgetContent(def, body) {
+    switch (def.id) {
+      case 'prayer-times': renderPrayerWidget(body); break;
+      case 'halal-checker': renderHalalWidget(body); break;
+      case 'wallet-mini': renderWalletWidget(body); break;
+      case 'zakat-quick': renderZakatWidget(body); break;
+      case 'verse': renderVerseWidget(body); break;
+    }
+  }
+
+  function renderPrayerWidget(body) {
+    body.innerHTML =
+      '<div class="fw-prayer-next">' +
+        '<div class="fw-prayer-lbl">Next Prayer</div>' +
+        '<div class="fw-prayer-name" id="fw-pn-name">\u2014</div>' +
+        '<div class="fw-prayer-time" id="fw-pn-time">\u2014</div>' +
+        '<div class="fw-prayer-countdown" id="fw-pn-countdown"></div>' +
+      '</div>' +
+      '<div class="fw-prayer-list" id="fw-prayer-list"></div>';
+
+    updatePrayerWidget();
+    startWidgetTimer('prayer-times', updatePrayerWidget, 10000);
+  }
+
+  function updatePrayerWidget() {
+    chrome.runtime.sendMessage({ type: 'GET_PRAYER_TIMES' }, res => {
+      if (!res || !res.ok || !res.data) return;
+      const pt = res.data;
+      const now = new Date();
+      const nowMins = now.getHours() * 60 + now.getMinutes();
+      const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+      let next = null;
+      let nextIdx = -1;
+      for (let i = 0; i < prayers.length; i++) {
+        const t = (pt[prayers[i]] || '00:00').substring(0, 5);
+        const [h, m] = t.split(':').map(Number);
+        if (h * 60 + m > nowMins) { next = { name: prayers[i], time: t }; nextIdx = i; break; }
+      }
+      if (!next) {
+        const t = (pt.Fajr || '05:30').substring(0, 5);
+        next = { name: 'Fajr (tomorrow)', time: t };
+      }
+
+      const nameEl = document.getElementById('fw-pn-name');
+      const timeEl = document.getElementById('fw-pn-time');
+      const cdEl = document.getElementById('fw-pn-countdown');
+      if (nameEl) nameEl.textContent = next.name;
+      if (timeEl) timeEl.textContent = next.time;
+
+      if (cdEl && next.name !== 'Fajr (tomorrow)') {
+        const [h, m] = next.time.split(':').map(Number);
+        const diff = (h * 60 + m - nowMins);
+        if (diff > 0) {
+          const hrs = Math.floor(diff / 60);
+          const mins = diff % 60;
+          cdEl.textContent = hrs > 0 ? hrs + 'h ' + mins + 'm remaining' : mins + 'm remaining';
+        } else {
+          cdEl.textContent = 'Now';
+        }
+      } else if (cdEl) {
+        cdEl.textContent = '';
+      }
+
+      const listEl = document.getElementById('fw-prayer-list');
+      if (!listEl) return;
+      listEl.innerHTML = prayers.map((p, i) => {
+        const isActive = i === nextIdx;
+        return '<div class="fw-prayer-row' + (isActive ? ' fw-prayer-active' : '') + '">' +
+          '<span class="fw-prayer-label">' + p + '</span>' +
+          '<span class="fw-prayer-val">' + (pt[p] || '\u2014').substring(0, 5) + '</span>' +
+        '</div>';
+      }).join('');
+    });
+  }
+
+  function renderHalalWidget(body) {
+    body.innerHTML =
+      '<div class="fw-halal-input">' +
+        '<input class="fw-halal-field" id="fw-halal-url" type="text" placeholder="Enter URL to check\u2026">' +
+        '<button class="fw-halal-check-btn" id="fw-halal-btn">Check</button>' +
+      '</div>' +
+      '<div id="fw-halal-result"></div>';
+
+    document.getElementById('fw-halal-btn').addEventListener('click', () => checkHalalUrl());
+    document.getElementById('fw-halal-url').addEventListener('keydown', e => {
+      if (e.key === 'Enter') checkHalalUrl();
+    });
+  }
+
+  function checkHalalUrl() {
+    const input = document.getElementById('fw-halal-url');
+    const result = document.getElementById('fw-halal-result');
+    if (!input || !result) return;
+    const url = input.value.trim();
+    if (!url) return;
+    const btn = document.getElementById('fw-halal-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Checking\u2026'; }
+
+    const text = '';
+    chrome.runtime.sendMessage({ type: 'CLASSIFY_URL', url, text }, res => {
+      if (btn) { btn.disabled = false; btn.textContent = 'Check'; }
+      if (res && res.ok && res.data) {
+        const v = res.data.verdict;
+        const cls = 'fw-halal-' + v;
+        const labels = {
+          safe: '\u2705 This page appears Islamically safe',
+          caution: '\u26A0\uFE0F Proceed with caution',
+          warning: '\u26D4 Warning: Islamically problematic content',
+          blocked: '\uD83D\uDEAB Blocked: Haram content detected'
+        };
+        result.className = 'fw-halal-result ' + cls;
+        let html = '<div>' + (labels[v] || 'Unknown') + '</div>';
+        if (res.data.reason) {
+          html += '<div class="fw-halal-reason">' + res.data.reason.substring(0, 80) + '</div>';
+        }
+        // Whisper brief explanation
+        const brief = res.data.quran && res.data.quran.briefExplanation;
+        if (brief) {
+          html += '<div class="fw-halal-brief">' + brief.substring(0, 160) + (brief.length > 160 ? '\u2026' : '') + '</div>';
+        }
+        // Quran / Hadith citation
+        if (res.data.quran) {
+          const q = res.data.quran;
+          html += '<div class="fw-halal-quran"><em>' + q.ref + '</em> \u2014 ' + q.english.substring(0, 80) + (q.english.length > 80 ? '\u2026' : '') + '</div>';
+        }
+        result.innerHTML = html;
+      } else {
+        result.className = 'fw-halal-result fw-halal-caution';
+        result.innerHTML = '<div>\u26A0\uFE0F Could not analyze URL</div><div class="fw-halal-reason">API unavailable, try again later</div>';
+      }
+    });
+  }
+
+  function renderWalletWidget(body) {
+    body.innerHTML =
+      '<div class="fw-wallet-body">' +
+        '<div class="fw-wallet-amount" id="fw-wallet-bal">\u2014</div>' +
+        '<div class="fw-wallet-currency">FLH</div>' +
+        '<div class="fw-wallet-addr" id="fw-wallet-addr"></div>' +
+        '<div class="fw-wallet-status" id="fw-wallet-status">Checking wallet\u2026</div>' +
+      '</div>';
+    updateWalletWidget();
+    startWidgetTimer('wallet-mini', updateWalletWidget, 30000);
+  }
+
+  function updateWalletWidget() {
+    chrome.runtime.sendMessage({ type: 'FALAH_GET_WALLET' }, res => {
+      const balEl = document.getElementById('fw-wallet-bal');
+      const addrEl = document.getElementById('fw-wallet-addr');
+      const statusEl = document.getElementById('fw-wallet-status');
+      if (res && res.ok && res.data && typeof res.data.balance === 'number') {
+        if (balEl) balEl.textContent = res.data.balance.toFixed(2);
+        if (addrEl && res.data.address) {
+          const a = res.data.address;
+          addrEl.textContent = a.length > 24 ? a.substring(0, 10) + '\u2026' + a.substring(a.length - 6) : a;
+        }
+        if (statusEl) statusEl.textContent = 'Connected';
+      } else {
+        if (balEl) balEl.textContent = '\u2014';
+        if (statusEl) statusEl.textContent = 'Sign in to view wallet';
+      }
+    });
+  }
+
+  function renderZakatWidget(body) {
+    body.innerHTML =
+      '<div class="fw-zakat-form">' +
+        '<div class="fw-zakat-label">Total Wealth (MYR)</div>' +
+        '<div class="fw-zakat-row">' +
+          '<input class="fw-zakat-field" id="fw-zakat-input" type="number" placeholder="e.g. 50000">' +
+          '<button class="fw-zakat-calc-btn" id="fw-zakat-btn">Calculate</button>' +
+        '</div>' +
+        '<div id="fw-zakat-result"></div>' +
+      '</div>';
+
+    document.getElementById('fw-zakat-btn').addEventListener('click', () => calcWidgetZakat());
+    document.getElementById('fw-zakat-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') calcWidgetZakat();
+    });
+  }
+
+  function calcWidgetZakat() {
+    const input = document.getElementById('fw-zakat-input');
+    const wealth = parseFloat(input ? input.value : '0');
+    if (!wealth || wealth <= 0) return;
+    const btn = document.getElementById('fw-zakat-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Calculating\u2026'; }
+
+    chrome.runtime.sendMessage({ type: 'FALAH_CALCULATE_ZAKAT', wealth }, res => {
+      if (btn) { btn.disabled = false; btn.textContent = 'Calculate'; }
+      const resultEl = document.getElementById('fw-zakat-result');
+      if (!resultEl) return;
+      if (res && res.ok && res.data) {
+        if (res.data.eligible === false) {
+          resultEl.innerHTML =
+            '<div class="fw-zakat-result">' +
+              '<div class="fw-zakat-detail">' + (res.data.message || 'Wealth below nisab. No zakat due.') + '</div>' +
+            '</div>';
+        } else {
+          resultEl.innerHTML =
+            '<div class="fw-zakat-result">' +
+              '<div class="fw-zakat-amount">RM ' + res.data.amount.toFixed(2) + '</div>' +
+              '<div class="fw-zakat-detail">Due at ' + (res.data.rate || 2.5) + '% rate</div>' +
+            '</div>';
+        }
+      } else {
+        resultEl.innerHTML =
+          '<div class="fw-zakat-result">' +
+            '<div class="fw-zakat-detail">Calculation failed. Try again.</div>' +
+          '</div>';
+      }
+    });
+  }
+
+  function renderVerseWidget(body) {
+    const idx = new Date().getDate() % DAILY_VERSES.length;
+    const v = DAILY_VERSES[idx];
+    body.innerHTML =
+      '<div class="fw-verse-body">' +
+        '<div class="fw-verse-arabic">' + v.arabic + '</div>' +
+        '<div class="fw-verse-english">"' + v.english + '"</div>' +
+        '<div class="fw-verse-ref">' + v.ref + '</div>' +
+      '</div>';
+
+    startVerseTimer();
+  }
+
+  function setupWidgetDrag(el, def) {
+    const header = el.querySelector('.fw-header');
+    let dragging = false, startX, startY, origX, origY;
+
+    header.addEventListener('mousedown', e => {
+      if (e.target.closest('.fw-actions')) return;
+      dragging = true;
+      el.classList.add('fw-dragging');
+      startX = e.clientX;
+      startY = e.clientY;
+      origX = widgetState[def.id].x;
+      origY = widgetState[def.id].y;
+      e.preventDefault();
+    });
+
+    let rafId = null;
+    document.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        el.style.left = Math.max(0, origX + dx) + 'px';
+        el.style.top = Math.max(0, origY + dy) + 'px';
+      });
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (!dragging) return;
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+      dragging = false;
+      el.classList.remove('fw-dragging');
+      const rect = el.getBoundingClientRect();
+      widgetState[def.id].x = Math.round(rect.left);
+      widgetState[def.id].y = Math.round(rect.top);
+      saveWidgetState();
+    });
+  }
+
+  function toggleWidgetSticky(id) {
+    const s = widgetState[id];
+    const el = widgetEls[id];
+    if (!s || !el) return;
+    if (s.state === 'sticky') {
+      s.state = 'minimized';
+      el.classList.add('fw-minimized');
+      const btn = el.querySelector('.fw-sticky-btn');
+      if (btn) btn.classList.remove('fw-sticky-active');
+    } else {
+      s.state = 'sticky';
+      el.classList.remove('fw-minimized', 'fw-hidden');
+      const btn = el.querySelector('.fw-sticky-btn');
+      if (btn) btn.classList.add('fw-sticky-active');
+    }
+    saveWidgetState();
+    updateConfigPanel();
+  }
+
+  function minimizeWidget(id) {
+    const s = widgetState[id];
+    const el = widgetEls[id];
+    if (!s || !el) return;
+    s.state = 'minimized';
+    el.classList.add('fw-minimized');
+    el.classList.remove('fw-hidden');
+    const btn = el.querySelector('.fw-sticky-btn');
+    if (btn) btn.classList.remove('fw-sticky-active');
+    saveWidgetState();
+    updateConfigPanel();
+  }
+
+  function clearWidgetTimer(id) {
+    if (widgetTimers[id]) {
+      clearInterval(widgetTimers[id]);
+      delete widgetTimers[id];
+    }
+  }
+
+  function startWidgetTimer(id, fn, ms) {
+    clearWidgetTimer(id);
+    widgetTimers[id] = setInterval(fn, ms);
+  }
+
+  function hideWidget(id) {
+    const s = widgetState[id];
+    const el = widgetEls[id];
+    if (!s || !el) return;
+    s.state = 'hidden';
+    el.classList.add('fw-hidden');
+    clearWidgetTimer(id);
+    saveWidgetState();
+    updateConfigPanel();
+  }
+
+  function showWidget(id) {
+    const s = widgetState[id];
+    const el = widgetEls[id];
+    if (!s) return;
+    if (!el) {
+      const def = WIDGET_DEFS.find(d => d.id === id);
+      if (def) buildWidgetEl(def);
+      return;
+    }
+    s.state = 'minimized';
+    el.classList.remove('fw-hidden');
+    el.classList.add('fw-minimized');
+    restartWidgetTimer(id);
+    saveWidgetState();
+    updateConfigPanel();
+  }
+
+  function restartWidgetTimer(id) {
+    switch (id) {
+      case 'prayer-times': startWidgetTimer('prayer-times', updatePrayerWidget, 10000); break;
+      case 'wallet-mini': startWidgetTimer('wallet-mini', updateWalletWidget, 30000); break;
+      case 'verse': startVerseTimer(); break;
+    }
+  }
+
+  function startVerseTimer() {
+    clearWidgetTimer('verse');
+    widgetTimers['verse'] = setInterval(() => {
+      const el = widgetEls['verse'];
+      if (!el || el.classList.contains('fw-hidden')) return;
+      const idx2 = new Date().getDate() % DAILY_VERSES.length;
+      const v2 = DAILY_VERSES[idx2];
+      const body = el.querySelector('.fw-body');
+      if (!body) return;
+      const arabic = body.querySelector('.fw-verse-arabic');
+      const english = body.querySelector('.fw-verse-english');
+      const ref = body.querySelector('.fw-verse-ref');
+      if (arabic) arabic.textContent = v2.arabic;
+      if (english) english.textContent = '"' + v2.english + '"';
+      if (ref) ref.textContent = v2.ref;
+    }, 3600000);
+  }
+
+  function buildWidgetToggle() {
+    widgetToggle = document.createElement('button');
+    widgetToggle.id = 'falah-widget-toggle';
+    widgetToggle.textContent = '\u{1F9D0}';
+    widgetToggle.title = 'Toggle Falah Widgets';
+    document.body.appendChild(widgetToggle);
+
+    configPanel = document.createElement('div');
+    configPanel.className = 'fw-config-panel';
+    configPanel.innerHTML =
+      '<div class="fw-config-header">' +
+        '<span>Falah Widgets</span>' +
+        '<button class="fw-config-close" id="fw-config-close">&times;</button>' +
+      '</div>' +
+      '<div id="fw-config-list"></div>';
+    document.body.appendChild(configPanel);
+
+    widgetToggle.addEventListener('click', e => {
+      e.stopPropagation();
+      configPanel.classList.toggle('fw-config-open');
+      updateConfigPanel();
+    });
+
+    document.getElementById('fw-config-close').addEventListener('click', () => {
+      configPanel.classList.remove('fw-config-open');
+    });
+
+    document.addEventListener('click', e => {
+      if (configPanel && !configPanel.contains(e.target) && e.target !== widgetToggle) {
+        configPanel.classList.remove('fw-config-open');
+      }
+    });
+  }
+
+  function updateConfigPanel() {
+    const list = document.getElementById('fw-config-list');
+    if (!list) return;
+    list.innerHTML = WIDGET_DEFS.map(def => {
+      const s = widgetState[def.id];
+      if (!s) return '';
+      const badgeText = s.state === 'sticky' ? 'Sticky' : s.state === 'minimized' ? 'Minimized' : 'Hidden';
+      const badgeCls = s.state === 'sticky' ? 'fw-badge-sticky' : s.state === 'minimized' ? 'fw-badge-minimized' : 'fw-badge-hidden';
+      return '<div class="fw-config-item" data-widget="' + def.id + '">' +
+        '<span class="fw-config-icon">' + def.icon + '</span>' +
+        '<span class="fw-config-label">' + def.title + '</span>' +
+        '<span class="fw-config-badge ' + badgeCls + '">' + badgeText + '</span>' +
+      '</div>';
+    }).join('');
+    list.querySelectorAll('.fw-config-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const id = item.dataset.widget;
+        const s = widgetState[id];
+        if (!s) return;
+        if (s.state === 'hidden') {
+          showWidget(id);
+        } else if (s.state === 'minimized') {
+          toggleWidgetSticky(id);
+        } else {
+          minimizeWidget(id);
+        }
+      });
+    });
+  }
+
+  function startWidgetRefresh() {
+    // Prayer times and wallet already have their own intervals
+  }
+
   // ── Init ──────────────────────────────────────────────────────────────────
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
   } else {
     boot();
   }
-})();
 
-
-// ══════════════════════════════════════════════════════════════════
-// v2.1 — TRAFFIC LIGHT CLASSIFIER (Falah Companion merge)
-// Independent shadow host: #falah-companion-host (top-left pill)
-// Queries GET_CLASSIFICATION from SW, renders status pill + mini-panel
-// Does NOT modify any existing subbar, panel, or verdict logic.
-// ══════════════════════════════════════════════════════════════════
-
-(function () {
-  'use strict';
-
-  let _compShadow, _compHost, _compPanelOpen = false;
-
-  const COMPANION_STYLES = `
-    .fc-pill {
-      position: fixed; top: 10px; left: 10px;
-      display: flex; align-items: center; gap: 5px;
-      padding: 5px 9px; border-radius: 999px;
-      font: 600 11px/1.2 'DM Sans', system-ui, sans-serif;
-      background: rgba(13,13,16,0.92); color: rgba(255,255,255,0.85);
-      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-      cursor: pointer; z-index: 2147483640;
-      user-select: none; transition: all 0.18s;
-      border: 1px solid rgba(255,255,255,0.08);
-      box-shadow: 0 2px 10px rgba(0,0,0,0.35);
-    }
-    .fc-pill:hover { transform: scale(1.06); box-shadow: 0 4px 16px rgba(0,0,0,0.45); }
-    .fc-pill.halal  { border-color: rgba(34,197,94,0.45);  }
-    .fc-pill.makruh { border-color: rgba(234,179,8,0.45);  }
-    .fc-pill.haram  { border-color: rgba(239,68,68,0.45);  }
-    .fc-pill.unknown{ border-color: rgba(107,114,128,0.35);}
-    .fc-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-    .fc-pill.halal  .fc-dot { background: #22c55e; box-shadow: 0 0 5px rgba(34,197,94,0.6); }
-    .fc-pill.makruh .fc-dot { background: #eab308; box-shadow: 0 0 5px rgba(234,179,8,0.6); }
-    .fc-pill.haram  .fc-dot { background: #ef4444; box-shadow: 0 0 5px rgba(239,68,68,0.6); }
-    .fc-pill.unknown .fc-dot{ background: #6b7280; }
-
-    .fc-panel {
-      position: fixed; top: 44px; left: 10px;
-      width: 230px; max-height: 420px; overflow-y: auto;
-      background: rgba(13,13,16,0.97); color: rgba(255,255,255,0.88);
-      border-radius: 10px; padding: 13px;
-      font: 12px/1.5 'DM Sans', system-ui, sans-serif;
-      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255,255,255,0.09);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.55);
-      z-index: 2147483640;
-      scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;
-    }
-
-    .fc-tabs { display: flex; gap: 4px; margin-bottom: 11px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; }
-    .fc-tab { flex: 1; padding: 5px; background: transparent; border: none; color: rgba(255,255,255,0.5); cursor: pointer; font: 11px 'DM Sans',system-ui,sans-serif; border-radius: 5px; transition: all 0.15s; }
-    .fc-tab:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.75); }
-    .fc-tab.active { background: rgba(255,255,255,0.1); color: #fff; font-weight: 600; }
-    .fc-tab-content.hidden { display: none; }
-
-    .fc-status-badge {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 3px 9px; border-radius: 6px;
-      font-size: 11px; font-weight: 600; margin-bottom: 5px;
-    }
-    .fc-status-badge.halal  { background: rgba(34,197,94,0.15);  color: #22c55e; border: 1px solid rgba(34,197,94,0.25);  }
-    .fc-status-badge.makruh { background: rgba(234,179,8,0.15);  color: #eab308; border: 1px solid rgba(234,179,8,0.25);  }
-    .fc-status-badge.haram  { background: rgba(239,68,68,0.15);  color: #ef4444; border: 1px solid rgba(239,68,68,0.25);  }
-    .fc-status-badge.unknown{ background: rgba(107,114,128,0.12);color: #9ca3af; border: 1px solid rgba(107,114,128,0.2); }
-
-    .fc-reason { font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 10px; }
-
-    .fc-classify-title { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 6px; font-family: 'JetBrains Mono', monospace; }
-    .fc-btns { display: flex; gap: 5px; margin-bottom: 7px; }
-    .fc-btn { flex: 1; padding: 5px 4px; border: none; border-radius: 5px; cursor: pointer; font: 600 11px 'DM Sans',system-ui,sans-serif; color: #fff; transition: all 0.15s; }
-    .fc-btn:hover { filter: brightness(1.15); }
-    .fc-btn.halal  { background: #22c55e; }
-    .fc-btn.makruh { background: #eab308; }
-    .fc-btn.haram  { background: #ef4444; }
-    .fc-remove { width: 100%; padding: 5px; background: transparent; border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; color: rgba(255,255,255,0.45); cursor: pointer; font: 11px 'DM Sans',system-ui,sans-serif; transition: all 0.15s; margin-top: 2px; }
-    .fc-remove:hover { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.7); }
-
-    .fc-nearby-title { font: 600 12px 'DM Sans',system-ui,sans-serif; margin-bottom: 6px; }
-    .fc-nearby-section { margin-bottom: 10px; }
-    .fc-place-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 11px; }
-    .fc-place-name { font-weight: 500; color: rgba(255,255,255,0.85); }
-    .fc-place-dist { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 1px; }
-    .fc-place-map { color: #60a5fa; text-decoration: none; font-size: 10px; flex-shrink: 0; margin-left: 6px; }
-    .fc-place-map:hover { color: #93c5fd; }
-    .fc-loading { text-align: center; color: rgba(255,255,255,0.4); padding: 14px 0; font-size: 11px; }
-    .fc-empty { text-align: center; color: rgba(255,255,255,0.3); padding: 10px 0; font-size: 11px; font-style: italic; }
-  `;
-
-  function fcInit() {
-    // Skip chrome internal pages
-    if (!location.hostname || location.hostname === '') return;
-    // Skip if already injected
-    if (document.querySelector('#falah-companion-host')) return;
-    // Wait for body
-    if (!document.body) { document.addEventListener('DOMContentLoaded', fcInit, { once: true }); return; }
-
-    chrome.runtime.sendMessage({ type: 'GET_CLASSIFICATION', hostname: location.hostname }, (res) => {
-      if (chrome.runtime.lastError) return; // extension context may be invalid
-      const data = (res?.ok && res.data) ? res.data : { status: 'unknown', reason: 'Not in Falah database' };
-      fcBuildPill(data);
-    });
+  // Boot widgets separately after page is ready
+  function bootWidgets() {
+    initWidgetSystem();
   }
-
-  function fcBuildPill(data) {
-    _compHost = document.createElement('div');
-    _compHost.id = 'falah-companion-host';
-    _compShadow = _compHost.attachShadow({ mode: 'closed' });
-
-    const style = document.createElement('style');
-    style.textContent = COMPANION_STYLES;
-    _compShadow.appendChild(style);
-
-    const pill = document.createElement('div');
-    pill.className = `fc-pill ${data.status}`;
-    pill.innerHTML = `<span class="fc-dot"></span>${fcLabel(data.status)}`;
-    pill.addEventListener('click', (e) => { e.stopPropagation(); fcTogglePanel(data); });
-    _compShadow.appendChild(pill);
-
-    document.body.appendChild(_compHost);
-  }
-
-  function fcLabel(status) {
-    return { halal: 'Halal', makruh: 'Makruh', haram: 'Haram', unknown: 'Unknown' }[status] || 'Unknown';
-  }
-
-  function fcTogglePanel(data) {
-    if (_compPanelOpen) {
-      _compShadow.querySelector('.fc-panel')?.remove();
-      _compPanelOpen = false;
-      return;
-    }
-    fcOpenPanel(data);
-  }
-
-  function fcOpenPanel(data) {
-    const panel = document.createElement('div');
-    panel.className = 'fc-panel';
-    panel.innerHTML = `
-      <div class="fc-tabs">
-        <button class="fc-tab active" data-tab="classify">Classify</button>
-        <button class="fc-tab" data-tab="nearby">Nearby</button>
-      </div>
-      <div class="fc-tab-content" id="fc-classify-tab">
-        <div class="fc-status-badge ${data.status}">
-          <span class="fc-dot"></span>${fcLabel(data.status)}
-        </div>
-        <div class="fc-reason">${fcEsc(data.reason || '')}</div>
-        <div class="fc-classify-title">Override classification</div>
-        <div class="fc-btns">
-          <button class="fc-btn halal">Halal</button>
-          <button class="fc-btn makruh">Makruh</button>
-          <button class="fc-btn haram">Haram</button>
-        </div>
-        <button class="fc-remove">Remove my override</button>
-      </div>
-      <div class="fc-tab-content hidden" id="fc-nearby-tab">
-        <div class="fc-loading">Tap to load location…</div>
-      </div>
-    `;
-
-    // Tab switching
-    panel.querySelectorAll('.fc-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        panel.querySelectorAll('.fc-tab').forEach(t => t.classList.remove('active'));
-        panel.querySelectorAll('.fc-tab-content').forEach(c => c.classList.add('hidden'));
-        tab.classList.add('active');
-        panel.querySelector('#fc-' + tab.dataset.tab + '-tab').classList.remove('hidden');
-        if (tab.dataset.tab === 'nearby') fcLoadNearby(panel);
-      });
-    });
-
-    // Classification buttons
-    panel.querySelectorAll('.fc-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const status = btn.className.replace('fc-btn ', '').trim();
-        chrome.runtime.sendMessage({ type: 'SET_CLASSIFICATION', hostname: location.hostname, status });
-        fcUpdatePill(status);
-        panel.remove();
-        _compPanelOpen = false;
-      });
-    });
-
-    // Remove override
-    panel.querySelector('.fc-remove').addEventListener('click', () => {
-      chrome.runtime.sendMessage({ type: 'CLEAR_CLASSIFICATION', hostname: location.hostname });
-      fcUpdatePill('unknown');
-      panel.remove();
-      _compPanelOpen = false;
-    });
-
-    _compShadow.appendChild(panel);
-    _compPanelOpen = true;
-
-    // Close on outside click
-    document.addEventListener('click', (e) => {
-      if (_compHost && !_compHost.contains(e.target)) {
-        panel.remove();
-        _compPanelOpen = false;
-      }
-    }, { once: true });
-  }
-
-  function fcUpdatePill(status) {
-    const pill = _compShadow?.querySelector('.fc-pill');
-    if (!pill) return;
-    pill.className = `fc-pill ${status}`;
-    pill.innerHTML = `<span class="fc-dot"></span>${fcLabel(status)}`;
-  }
-
-  async function fcLoadNearby(panel) {
-    const tab = panel.querySelector('#fc-nearby-tab');
-    if (!tab) return;
-    if (tab.dataset.loaded) return; // don't refetch
-    tab.innerHTML = '<div class="fc-loading">Getting your location…</div>';
-
-    if (!navigator.geolocation) {
-      tab.innerHTML = '<div class="fc-empty">Geolocation not available</div>';
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(async (pos) => {
-      const { latitude: lat, longitude: lon } = pos.coords;
-      tab.innerHTML = '<div class="fc-loading">Searching nearby…</div>';
-      try {
-        const [mosques, food] = await Promise.all([
-          fcFetchMosques(lat, lon),
-          fcFetchHalalFood(lat, lon)
-        ]);
-        tab.innerHTML = `
-          <div class="fc-nearby-section">
-            <div class="fc-nearby-title">🕌 Mosques (${mosques.length})</div>
-            ${mosques.length
-              ? mosques.map(p => fcPlaceRow(p)).join('')
-              : '<div class="fc-empty">None found within 3km</div>'}
-          </div>
-          <div class="fc-nearby-section">
-            <div class="fc-nearby-title">🍽️ Halal Food (${food.length})</div>
-            ${food.length
-              ? food.map(p => fcPlaceRow(p)).join('')
-              : '<div class="fc-empty">None found within 3km</div>'}
-          </div>`;
-        tab.dataset.loaded = '1';
-      } catch (err) {
-        tab.innerHTML = '<div class="fc-empty">Could not load nearby places. Try again.</div>';
-      }
-    }, () => {
-      tab.innerHTML = '<div class="fc-empty">Location access denied</div>';
-    }, { timeout: 8000 });
-  }
-
-  async function fcFetchMosques(lat, lon) {
-    const q = `[out:json][timeout:20];(node["amenity"="mosque"](around:3000,${lat},${lon});way["amenity"="mosque"](around:3000,${lat},${lon}););out center 8;`;
-    const res = await fetch('https://overpass-api.de/api/interpreter', {
-      method: 'POST', body: q, signal: AbortSignal.timeout(12000)
-    });
-    const d = await res.json();
-    return d.elements.map(e => ({
-      name: e.tags?.name || 'Masjid',
-      dist: fcHaversine(lat, lon, e.lat ?? e.center?.lat, e.lon ?? e.center?.lon),
-      lat: e.lat ?? e.center?.lat, lon: e.lon ?? e.center?.lon
-    })).filter(p => p.dist != null).sort((a, b) => a.dist - b.dist).slice(0, 6);
-  }
-
-  async function fcFetchHalalFood(lat, lon) {
-    const q = `[out:json][timeout:20];(node["cuisine"="halal"](around:3000,${lat},${lon});node["diet:halal"="yes"](around:3000,${lat},${lon});way["cuisine"="halal"](around:3000,${lat},${lon});way["diet:halal"="yes"](around:3000,${lat},${lon}););out center 8;`;
-    const res = await fetch('https://overpass-api.de/api/interpreter', {
-      method: 'POST', body: q, signal: AbortSignal.timeout(12000)
-    });
-    const d = await res.json();
-    return d.elements.map(e => ({
-      name: e.tags?.name || 'Halal Restaurant',
-      dist: fcHaversine(lat, lon, e.lat ?? e.center?.lat, e.lon ?? e.center?.lon),
-      lat: e.lat ?? e.center?.lat, lon: e.lon ?? e.center?.lon
-    })).filter(p => p.dist != null).sort((a, b) => a.dist - b.dist).slice(0, 6);
-  }
-
-  function fcPlaceRow(p) {
-    const mapsUrl = `https://www.google.com/maps?q=${p.lat},${p.lon}`;
-    return `<div class="fc-place-row">
-      <div>
-        <div class="fc-place-name">${fcEsc(p.name)}</div>
-        <div class="fc-place-dist">${p.dist.toFixed(2)} km away</div>
-      </div>
-      <a class="fc-place-map" href="${mapsUrl}" target="_blank" rel="noopener">Map ↗</a>
-    </div>`;
-  }
-
-  function fcHaversine(lat1, lon1, lat2, lon2) {
-    if (lat2 == null || lon2 == null) return null;
-    const R = 6371, dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLon/2)**2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  }
-
-  function fcEsc(str) {
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  // Boot — run after existing content script has finished
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', fcInit, { once: true });
+    document.addEventListener('DOMContentLoaded', bootWidgets);
   } else {
-    // Small delay so the main Falah subbar renders first
-    setTimeout(fcInit, 300);
+    bootWidgets();
   }
-
 })();

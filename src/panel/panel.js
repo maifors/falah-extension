@@ -4,19 +4,12 @@ const $ = id => document.getElementById(id);
 
 let settings = null;
 let prayerTimes = null;
-let dhikrCount = 0;
-let dhikrIdx = 0;
-let currentAyahSurah = null;
-let currentAyahAyah = null;
-let countdownTimer = null;
-
-const DHIKR_LIST = [
-  { phrase: 'سُبْحَانَ اللَّهِ', trans: 'SubhanAllah — Glory be to Allah', target: 33 },
-  { phrase: 'الْحَمْدُ لِلَّهِ', trans: 'Alhamdulillah — Praise be to Allah', target: 33 },
-  { phrase: 'اللَّهُ أَكْبَرُ', trans: 'Allahu Akbar — Allah is the Greatest', target: 34 },
-  { phrase: 'لَا إِلَٰهَ إِلَّا اللَّهُ', trans: 'La ilaha illallah — There is no god but Allah', target: 100 },
-  { phrase: 'أَسْتَغْفِرُ اللَّهَ', trans: 'Astaghfirullah — I seek forgiveness from Allah', target: 100 },
-];
+let user = null;
+let wallet = null;
+let transactions = null;
+let catalog = null;
+let clockTimer = null;
+const PARENT_ORIGIN = new URLSearchParams(location.search).get('origin') || '*';
 
 const GUIDANCE_DESCS = {
   advisory: 'Falah observes and informs. Navigation is never interrupted.',
@@ -24,46 +17,19 @@ const GUIDANCE_DESCS = {
   strict: 'Haram pages are fully blocked. Cannot be dismissed without leaving.'
 };
 
-const DEFAULT_SETTINGS = {
-  guidanceLevel: 'caution', subbarEnabled: true,
-  prayerNotifications: true, adhanSound: false,
-  city: 'Kuala Lumpur', country: 'Malaysia',
-  haulStart: null
-};
-
-// Real curated halal app directory — all links verified
-const APP_DIRECTORY = [
-  // Spirituality
-  { id: 's1', name: 'Quran.com', cat: 'spirituality', icon: '📖', desc: 'Complete Quran with translations, tafsir and audio recitations', url: 'https://quran.com', free: true, rating: 4.9 },
-  { id: 's2', name: 'Muslim Pro', cat: 'spirituality', icon: '🕌', desc: 'Prayer times, Quran, Qibla, Islamic calendar', url: 'https://www.muslimpro.com', free: true, rating: 4.8 },
-  { id: 's3', name: 'Sunnah.com', cat: 'spirituality', icon: '📿', desc: 'Complete hadith collection — Bukhari, Muslim, Abu Dawud and more', url: 'https://sunnah.com', free: true, rating: 4.7 },
-  { id: 's4', name: 'IslamQA', cat: 'spirituality', icon: '🤲', desc: 'Scholarly answers to Islamic jurisprudence questions', url: 'https://islamqa.info', free: true, rating: 4.6 },
-  // Finance
-  { id: 'f1', name: 'AAOIFI Standards', cat: 'finance', icon: '📜', desc: 'Official Shariah standards for Islamic finance', url: 'https://aaoifi.com', free: true, rating: 4.5 },
-  { id: 'f2', name: 'Zoya — Halal Stocks', cat: 'finance', icon: '📈', desc: 'Screen stocks for Shariah compliance with scholar-approved methodology', url: 'https://www.zoya.finance', free: true, rating: 4.7 },
-  { id: 'f3', name: 'Wahed Invest', cat: 'finance', icon: '💹', desc: 'Halal investing platform — fully Shariah-compliant portfolios', url: 'https://wahedinvest.com', free: false, rating: 4.6 },
-  { id: 'f4', name: 'Bank Islam Malaysia', cat: 'finance', icon: '🏦', desc: 'Malaysia\'s first Islamic bank — full digital banking', url: 'https://www.bankislam.com', free: true, rating: 4.4 },
-  // Lifestyle
-  { id: 'l1', name: 'Zabihah', cat: 'lifestyle', icon: '🥩', desc: 'Find halal restaurants and food near you worldwide', url: 'https://www.zabihah.com', free: true, rating: 4.5 },
-  { id: 'l2', name: 'HalalTrip', cat: 'lifestyle', icon: '✈️', desc: 'Muslim-friendly travel guide — hotels, restaurants, mosques', url: 'https://www.halaltrip.com', free: true, rating: 4.4 },
-  { id: 'l3', name: 'Islamic Finder', cat: 'lifestyle', icon: '🗺️', desc: 'Mosque locator, prayer times and Islamic calendar globally', url: 'https://www.islamicfinder.org', free: true, rating: 4.6 },
-  { id: 'l4', name: 'Halal.my', cat: 'lifestyle', icon: '✅', desc: 'JAKIM-certified halal product search for Malaysia', url: 'https://www.halal.gov.my', free: true, rating: 4.3 },
-  // Education
-  { id: 'e1', name: 'SeekersGuidance', cat: 'education', icon: '🎓', desc: 'Free Islamic education from qualified scholars worldwide', url: 'https://seekersguidance.org', free: true, rating: 4.8 },
-  { id: 'e2', name: 'Bayyinah TV', cat: 'education', icon: '📚', desc: 'Quranic Arabic and Islamic studies by Nouman Ali Khan', url: 'https://bayyinahtv.com', free: false, rating: 4.9 },
-  { id: 'e3', name: 'Yaqeen Institute', cat: 'education', icon: '🔬', desc: 'Research-based content combating doubts about Islam', url: 'https://yaqeeninstitute.org', free: true, rating: 4.7 },
-  // Productivity
-  { id: 'p1', name: 'Notion', cat: 'productivity', icon: '📋', desc: 'All-in-one workspace for notes, tasks and planning', url: 'https://notion.so', free: true, rating: 4.7 },
-  { id: 'p2', name: 'Trello', cat: 'productivity', icon: '📌', desc: 'Visual project management boards for teams and individuals', url: 'https://trello.com', free: true, rating: 4.5 },
-];
-
-const ZAKAT_RECIPIENTS = [
-  { name: 'Lembaga Zakat Selangor', country: 'Malaysia', url: 'https://www.zakatselangor.com.my', verified: true },
-  { name: 'LHDN — e-Zakat', country: 'Malaysia', url: 'https://www.hasil.gov.my', verified: true },
-  { name: 'Islamic Relief', country: 'Global', url: 'https://www.islamic-relief.org', verified: true },
-  { name: 'NZF — National Zakat Foundation', country: 'United Kingdom', url: 'https://nzf.org.uk', verified: true },
-  { name: 'Zakat Foundation of America', country: 'United States', url: 'https://www.zakat.org', verified: true },
-];
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadSettings();
+  await restoreAuth();
+  setupTabs();
+  setupClose();
+  setupAuth();
+  setupSettings();
+  setupWallet();
+  setupStore();
+  setupZakat();
+  setupQuickActions();
+  checkNetworkStatus();
+});
 
 function msgBg(payload) {
   return new Promise((resolve) => {
@@ -75,27 +41,128 @@ function escHtml(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ── BOOT ───────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', async () => {
-  await loadSettings();
-  setupTabs();
-  setupClose();
-  setupSettings();
-  setupQuickActions();
-  loadPrayerTimes();
-  setupDashboardZakat();
-  setupQibla();
-  setupZakatTab();
-  setupQuranTab();
-  setupStore();
-  renderZakatRecipients();
-  startCountdown();
-});
+function pad(n) { return String(n).padStart(2, '0'); }
 
-// ── SETTINGS ───────────────────────────────────────────────
+async function restoreAuth() {
+  const res = await msgBg({ type: 'FALAH_CHECK_AUTH' });
+  if (res?.ok && res.data) {
+    user = res.data.user;
+    showProfile();
+    loadWallet();
+  } else {
+    showLogin();
+  }
+}
+
+function showLogin() {
+  const av = $('auth-view');
+  const pv = $('profile-view');
+  if (av) av.style.display = 'block';
+  if (pv) pv.style.display = 'none';
+  const sub = $('brand-sub');
+  if (sub) sub.textContent = 'Not connected';
+}
+
+function showProfile() {
+  const av = $('auth-view');
+  const pv = $('profile-view');
+  if (av) av.style.display = 'none';
+  if (pv) pv.style.display = 'block';
+  const pn = $('profile-name');
+  if (pn) pn.textContent = user?.name || user?.email || '—';
+  const pu = $('profile-ummah');
+  if (pu) pu.textContent = `Ummah ID: ${user?.id || '—'}`;
+  const badge = $('profile-demo-badge');
+  if (badge) badge.style.display = user?.demo ? 'inline-block' : 'none';
+  const sub = $('brand-sub');
+  if (sub) sub.textContent = user?.email ? `Connected — ${user.email}` : 'Connected';
+}
+
+function setupAuth() {
+  const loginBtn = $('btn-login');
+  if (loginBtn) {
+    loginBtn.addEventListener('click', handleLogin);
+  }
+  const pwField = $('login-password');
+  if (pwField) {
+    pwField.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleLogin();
+    });
+  }
+  const demoBtn = $('btn-demo');
+  if (demoBtn) {
+    demoBtn.addEventListener('click', handleDemoLogin);
+  }
+  const logoutBtn = $('btn-logout');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', handleLogout);
+  }
+}
+
+async function handleLogin() {
+  const email = $('login-email')?.value.trim();
+  const password = $('login-password')?.value.trim();
+  if (!email || !password) return;
+  const btn = $('btn-login');
+  const errEl = $('login-error');
+  if (btn) { btn.textContent = 'Signing in…'; btn.disabled = true; }
+  if (errEl) errEl.textContent = '';
+  const res = await msgBg({ type: 'FALAH_LOGIN', email, password });
+  if (btn) { btn.textContent = 'Sign In'; btn.disabled = false; }
+  if (res?.ok && res.data) {
+    user = res.data.user;
+    showProfile();
+    loadWallet();
+    if (errEl) errEl.textContent = '';
+  } else {
+    if (errEl) errEl.textContent = res?.error || 'Login failed. Check credentials or gateway may be offline.';
+  }
+}
+
+async function handleDemoLogin() {
+  const btn = $('btn-demo');
+  const errEl = $('login-error');
+  if (btn) { btn.textContent = 'Starting demo…'; btn.disabled = true; }
+  if (errEl) errEl.textContent = '';
+  const res = await msgBg({ type: 'FALAH_DEMO_LOGIN' });
+  if (btn) { btn.textContent = 'Demo Mode (Offline Sandbox)'; btn.disabled = false; }
+  if (res?.ok && res.data) {
+    user = res.data.user;
+    user.demo = true;
+    showProfile();
+    loadWallet();
+    loadZakatHistory();
+    if (errEl) errEl.textContent = '';
+  } else {
+    if (errEl) errEl.textContent = 'Demo mode failed to start.';
+  }
+}
+
+async function handleLogout() {
+  await msgBg({ type: 'FALAH_LOGOUT' });
+  user = null;
+  wallet = null;
+  transactions = null;
+  showLogin();
+  const wb = $('wallet-balance');
+  if (wb) wb.textContent = '—';
+  const wlb = $('wl-balance');
+  if (wlb) wlb.textContent = '—';
+  const wa = $('wallet-address');
+  if (wa) wa.textContent = '—';
+  const wla = $('wl-address');
+  if (wla) wla.textContent = '—';
+  const txEl = $('tx-list');
+  if (txEl) txEl.innerHTML = '<div class="tx-empty">Sign in to view transactions</div>';
+}
+
 async function loadSettings() {
   const res = await msgBg({ type: 'GET_SETTINGS' });
-  settings = res?.ok ? res.data : { ...DEFAULT_SETTINGS };
+  settings = res?.ok ? res.data : {
+    guidanceLevel: 'caution', subbarEnabled: true, prayerNotifications: true,
+    adhanSound: false, adBlocking: true, trackerBlocking: true,
+    hctVerification: true, city: 'Kuala Lumpur', country: 'Malaysia', voiceStyle: 'scholar'
+  };
   applySettingsToUI();
 }
 
@@ -113,17 +180,297 @@ function applySettingsToUI() {
   });
   const cityEl = $('loc-city');
   const ctryEl = $('loc-country');
-  if (cityEl) cityEl.value = settings.city || 'Kuala Lumpur';
-  if (ctryEl) ctryEl.value = settings.country || 'Malaysia';
-  const cityLabel = $('prayer-city-label');
-  if (cityLabel) cityLabel.textContent = settings.city || 'Kuala Lumpur';
-  // Haul tracker
-  if (settings.haulStart) renderHaulStatus(settings.haulStart);
+  if (cityEl) cityEl.value = settings.city || '';
+  if (ctryEl) ctryEl.value = settings.country || '';
 }
 
 function saveSettings() {
   if (!settings) return;
   msgBg({ type: 'SAVE_SETTINGS', settings });
+}
+
+function setupTabs() {
+  document.querySelectorAll('.p-tab').forEach(tab => {
+    tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+  });
+  document.querySelectorAll('[data-tab]').forEach(el => {
+    el.addEventListener('click', () => {
+      const tab = el.dataset.tab;
+      if (tab) switchTab(tab);
+    });
+  });
+  document.querySelectorAll('[data-action="prayer"]').forEach(el => {
+    el.addEventListener('click', () => {
+      const tab = $('tab-dashboard');
+      if (tab) tab.scrollTop = 0;
+    });
+  });
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.p-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.p-tab-content').forEach(c => c.classList.toggle('active', c.id === `tab-${name}`));
+  if (name === 'store') loadCatalog();
+  if (name === 'wallet') { if (user) loadWallet(); }
+  if (name === 'settings') checkApiHealth();
+}
+
+function setupClose() {
+  $('btn-close')?.addEventListener('click', () => {
+    window.parent.postMessage({ source: 'falah-panel', type: 'CLOSE_PANEL' }, PARENT_ORIGIN);
+  });
+}
+
+async function loadCatalog() {
+  const res = await msgBg({ type: 'FALAH_GET_CATALOG' });
+  if (res?.ok && res.data) {
+    catalog = res.data;
+    renderCatalog();
+  }
+}
+
+function renderCatalog() {
+  const flagshipsEl = $('flagship-list');
+  if (flagshipsEl && catalog.flagships?.length) {
+    flagshipsEl.innerHTML = catalog.flagships.map(f => `
+      <div class="store-item" data-app-id="${escHtml(f.id)}">
+        <div class="store-thumb">${f.icon || '📦'}</div>
+        <div style="flex:1">
+          <div class="store-name">${escHtml(f.name)}</div>
+          <div style="font-size:10px;color:var(--text-3)">${escHtml(f.developer)}</div>
+          <div style="font-size:10.5px;color:var(--text-2);margin-top:2px">${escHtml(f.tagline)}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  const catGrid = $('cat-grid');
+  if (catGrid && catalog.categories?.length) {
+    catGrid.innerHTML = catalog.categories.map(c => `
+      <button class="cat-btn" data-slug="${escHtml(c.slug)}">
+        <span class="cat-name">${escHtml(c.name)}</span>
+        <span class="cat-count">${c.count}</span>
+      </button>
+    `).join('');
+    catGrid.querySelectorAll('.cat-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const slug = btn.dataset.slug;
+        const search = $('store-search');
+        if (search) search.value = slug;
+        filterApps(slug);
+      });
+    });
+  }
+
+  const appGrid = $('app-grid');
+  if (appGrid && catalog.apps?.length) {
+    appGrid.innerHTML = catalog.apps.map(a => `
+      <div class="store-item" data-app-id="${escHtml(a.id)}" data-category="${escHtml((a.category||'').toLowerCase())}">
+        <div class="store-thumb">${a.icon || '📦'}</div>
+        <div style="flex:1">
+          <div class="store-name">${escHtml(a.name)}</div>
+          ${a.verified ? '<div class="store-cert">✓ Falah Verified</div>' : ''}
+          <div style="font-size:10px;color:var(--text-3)">${escHtml(a.developer)}</div>
+          <div style="display:flex;gap:8px;margin-top:3px">
+            <span class="store-price">${a.price === 0 ? 'Free' : `RM ${(a.price||0).toFixed(2)}`}</span>
+            <span style="font-size:10px;color:var(--text-3)">★ ${a.rating || '—'}</span>
+            <span style="font-size:10px;color:var(--text-3)">${(a.downloads||0).toLocaleString()}+</span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  setupStoreSearch();
+}
+
+function setupStoreSearch() {
+  const search = $('store-search');
+  if (!search) return;
+  search.addEventListener('input', () => filterApps(search.value.toLowerCase()));
+}
+
+function filterApps(query) {
+  document.querySelectorAll('#app-grid .store-item').forEach(item => {
+    const name = item.querySelector('.store-name')?.textContent?.toLowerCase() || '';
+    const cat = item.dataset.category || '';
+    const match = !query || name.includes(query) || cat.includes(query);
+    item.style.display = match ? '' : 'none';
+  });
+}
+
+async function loadWallet() {
+  const walletRes = await msgBg({ type: 'FALAH_GET_WALLET' });
+  if (walletRes?.ok && walletRes.data) {
+    wallet = walletRes.data;
+    const bal = typeof wallet.balance === 'number' ? wallet.balance.toFixed(2) : '—';
+    const wb = $('wallet-balance');
+    if (wb) wb.textContent = bal;
+    const wlb = $('wl-balance');
+    if (wlb) wlb.textContent = bal;
+    const addr = wallet.address || '—';
+    const wa = $('wallet-address');
+    if (wa) wa.textContent = addr.length > 20 ? addr.substring(0, 18) + '…' : addr;
+    const wla = $('wl-address');
+    if (wla) wla.textContent = addr.length > 20 ? addr.substring(0, 18) + '…' : addr;
+  }
+
+  const txRes = await msgBg({ type: 'FALAH_GET_TRANSACTIONS' });
+  if (txRes?.ok && txRes.data) {
+    transactions = txRes.data;
+    renderTransactions();
+  }
+
+  const statsRes = await msgBg({ type: 'FALAH_GET_WALLET_STATS' });
+  if (statsRes?.ok && statsRes.data) {
+    const s = statsRes.data;
+    const setVal = (id, val) => { const el = $(id); if (el) el.textContent = val ?? '—'; };
+    setVal('ws-total', s.totalWallets ?? '—');
+    setVal('ws-volume', s.volume ? `${parseFloat(s.volume).toFixed(2)}` : '—');
+    setVal('ws-total-wallets', s.totalWallets ?? '—');
+    setVal('ws-total-tx', s.totalTransactions ?? '—');
+    setVal('ws-total-volume', s.volume ? `${parseFloat(s.volume).toFixed(2)}` : '—');
+  }
+}
+
+function renderTransactions() {
+  const txList = $('tx-list');
+  if (!txList) return;
+  if (!transactions?.length) {
+    txList.innerHTML = '<div class="tx-empty">No transactions yet</div>';
+    return;
+  }
+  const labels = { TRANSFER_IN: 'Received', TRANSFER_OUT: 'Sent', MINT: 'Minted' };
+  txList.innerHTML = transactions.map(tx => {
+    const isIn = tx.type === 'TRANSFER_IN' || tx.type === 'MINT';
+    const cls = isIn ? 'tx-in' : 'tx-out';
+    const icon = isIn ? '↓' : '↑';
+    const date = tx.timestamp ? new Date(tx.timestamp).toLocaleDateString() : '';
+    return `<div class="tx-row ${cls}">
+      <div class="tx-icon">${icon}</div>
+      <div class="tx-info">
+        <div class="tx-type">${labels[tx.type] || tx.type}</div>
+        <div class="tx-date">${date}</div>
+      </div>
+      <div class="tx-amount">${isIn ? '+' : '-'}${parseFloat(tx.amount).toFixed(2)} ${tx.currency || 'FLH'}</div>
+    </div>`;
+  }).join('');
+}
+
+function setupWallet() {
+  $('wl-create')?.addEventListener('click', async () => {
+    const res = await msgBg({ type: 'FALAH_CREATE_WALLET' });
+    if (res?.ok && res.data) {
+      wallet = res.data;
+      const bal = typeof wallet.balance === 'number' ? wallet.balance.toFixed(2) : '—';
+      const wb = $('wallet-balance');
+      if (wb) wb.textContent = bal;
+      const wlb = $('wl-balance');
+      if (wlb) wlb.textContent = bal;
+      const addr = wallet.address || '—';
+      const wa = $('wallet-address');
+      if (wa) wa.textContent = addr.length > 20 ? addr.substring(0, 18) + '…' : addr;
+      const wla = $('wl-address');
+      if (wla) wla.textContent = addr.length > 20 ? addr.substring(0, 18) + '…' : addr;
+    }
+  });
+  $('wl-refresh')?.addEventListener('click', () => { if (user) loadWallet(); });
+}
+
+function setupZakat() {
+  $('btn-zakat-calc')?.addEventListener('click', calculateZakat);
+  const wealthInput = $('zakat-wealth');
+  if (wealthInput) {
+    wealthInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') calculateZakat();
+    });
+  }
+  $('btn-zakat-pay')?.addEventListener('click', async () => {
+    const amount = parseFloat($('zr-amount')?.textContent?.replace('RM ', '') || '0');
+    if (!amount || amount <= 0) return;
+    const res = await msgBg({ type: 'FALAH_PAY_ZAKAT', amount });
+    if (res?.ok) {
+      const btn = $('btn-zakat-pay');
+      if (btn) { btn.textContent = 'Paid ✓'; btn.disabled = true; }
+      setTimeout(() => { if (btn) { btn.textContent = 'Pay Zakat'; btn.disabled = false; } }, 3000);
+      loadZakatHistory();
+    }
+  });
+  loadZakatHistory();
+}
+
+async function calculateZakat() {
+  const wealth = parseFloat($('zakat-wealth')?.value);
+  if (!wealth || wealth <= 0) return;
+  const btn = $('btn-zakat-calc');
+  if (btn) { btn.textContent = 'Calculating…'; btn.disabled = true; }
+  const res = await msgBg({ type: 'FALAH_CALCULATE_ZAKAT', wealth });
+  if (btn) { btn.textContent = 'Calculate'; btn.disabled = false; }
+  const zr = $('zakat-result');
+  const za = $('zr-amount');
+  const zd = $('zr-detail');
+  const nisabEl = $('zf-nisab');
+  if (res?.ok && res.data) {
+    if (zr) zr.style.display = 'block';
+    if (za) za.textContent = `RM ${res.data.amount.toFixed(2)}`;
+    if (zd) {
+      if (res.data.eligible === false) {
+        zd.innerHTML = `<span style="color:var(--amber)">${escHtml(res.data.message)}</span>`;
+      } else {
+        zd.innerHTML = `Wealth: RM ${wealth.toFixed(2)}<br>Rate: ${res.data.rate || 2.5}%<br>Due: RM ${res.data.amount.toFixed(2)}`;
+      }
+    }
+    if (nisabEl) nisabEl.textContent = `RM ${(res.data.nisab || 20000).toLocaleString()}`;
+    const payBtn = $('btn-zakat-pay');
+    if (payBtn) payBtn.style.display = res.data.eligible !== false ? '' : 'none';
+  } else {
+    if (zr) zr.style.display = 'none';
+  }
+}
+
+async function loadZakatHistory() {
+  const res = await msgBg({ type: 'FALAH_GET_ZAKAT_HISTORY' });
+  const zh = $('zakat-history');
+  if (!zh) return;
+  if (res?.ok && res.data?.length) {
+    zh.innerHTML = res.data.map(p => `
+      <div class="tx-row tx-in">
+        <div class="tx-icon">🤲</div>
+        <div class="tx-info">
+          <div class="tx-type">Zakat Paid</div>
+          <div class="tx-date">${p.timestamp ? new Date(p.timestamp).toLocaleDateString() : ''}</div>
+        </div>
+        <div class="tx-amount">-${parseFloat(p.amount).toFixed(2)} ${p.currency || 'MYR'}</div>
+      </div>
+    `).join('');
+  } else {
+    zh.innerHTML = '<div class="tx-empty">No zakat payments yet</div>';
+  }
+}
+
+async function checkNetworkStatus() {
+  const res = await msgBg({ type: 'FALAH_GET_NETWORK_STATUS' });
+  if (res?.ok && res.data) {
+    const map = { gateway: 'nr-gateway', ummah: 'nr-ummah', wallet: 'nr-wallet', mocknet: 'nr-mocknet' };
+    for (const [key, elId] of Object.entries(map)) {
+      const el = $(elId);
+      if (!el) continue;
+      const s = res.data[key];
+      if (s === 'online') { el.textContent = 'Online'; el.className = 'nr-status nr-online'; }
+      else if (s === 'offline' || s === 'unknown') { el.textContent = 'Offline'; el.className = 'nr-status nr-offline'; }
+      else if (s === 'demo') { el.textContent = 'Sandbox'; el.className = 'nr-status nr-demo'; }
+      else { el.textContent = 'Unknown'; el.className = 'nr-status'; }
+    }
+  }
+}
+
+function setupQuickActions() {
+  document.querySelectorAll('.qa-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      if (tab) switchTab(tab);
+    });
+  });
 }
 
 function setupSettings() {
@@ -137,456 +484,122 @@ function setupSettings() {
       saveSettings();
     });
   });
+
   document.querySelectorAll('.toggle-row').forEach(row => {
     const sw = row.querySelector('.toggle-sw');
     sw?.addEventListener('click', () => {
       sw.classList.toggle('on');
       const key = row.dataset.key;
-      if (key && settings) { settings[key] = sw.classList.contains('on'); saveSettings(); }
+      if (key && settings) {
+        settings[key] = sw.classList.contains('on');
+        saveSettings();
+      }
     });
   });
+
   $('btn-save-location')?.addEventListener('click', () => {
     const city = $('loc-city')?.value.trim();
     const country = $('loc-country')?.value.trim();
     if (!city || !country) return;
-    settings.city = city; settings.country = country;
+    settings.city = city;
+    settings.country = country;
     saveSettings();
     loadPrayerTimes();
     const btn = $('btn-save-location');
-    if (btn) { btn.textContent = 'Saved ✓'; setTimeout(() => btn.textContent = 'Update Prayer Times', 1500); }
-    const lbl = $('prayer-city-label');
-    if (lbl) lbl.textContent = city;
+    if (btn) { btn.textContent = 'Saved ✓'; setTimeout(() => btn.textContent = 'Save Location', 1500); }
   });
-  $('btn-detect-location')?.addEventListener('click', () => {
-    if (!navigator.geolocation) return;
-    const btn = $('btn-detect-location');
-    btn.textContent = 'Detecting…'; btn.disabled = true;
-    navigator.geolocation.getCurrentPosition(async (pos) => {
-      const { latitude: lat, longitude: lon } = pos.coords;
-      try {
-        const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
-        const d = await r.json();
-        const city = d.address?.city || d.address?.town || d.address?.village || '';
-        const country = d.address?.country || '';
-        if (city) { $('loc-city').value = city; settings.city = city; }
-        if (country) { $('loc-country').value = country; settings.country = country; }
-        saveSettings(); loadPrayerTimes();
-        const lbl = $('prayer-city-label');
-        if (lbl) lbl.textContent = city;
-      } catch(_) {}
-      btn.textContent = '📍 Use My Location'; btn.disabled = false;
-    }, () => { btn.textContent = '📍 Use My Location'; btn.disabled = false; });
+
+  document.querySelectorAll('#voice-row .v-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#voice-row .v-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      settings.voiceStyle = btn.dataset.voice;
+      saveSettings();
+    });
   });
 }
 
-// ── TABS ───────────────────────────────────────────────────
-function setupTabs() {
-  document.querySelectorAll('.p-tab').forEach(tab => {
-    tab.addEventListener('click', () => switchTab(tab.dataset.tab));
-  });
-}
-
-function switchTab(name) {
-  document.querySelectorAll('.p-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
-  document.querySelectorAll('.p-tab-content').forEach(c => c.classList.toggle('active', c.id === `tab-${name}`));
-}
-
-function setupClose() {
-  $('btn-close')?.addEventListener('click', async () => {
-    try { await chrome.runtime.sendMessage({ type: 'OPEN_SIDE_PANEL' }); } catch (_) {}
-    window.parent.postMessage({ source: 'falah-panel', type: 'CLOSE_PANEL' }, '*');
-  });
-}
-
-function setupQuickActions() {
-  document.querySelectorAll('.qa-btn[data-tab]').forEach(btn => {
-    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-  });
-}
-
-// ── PRAYER TIMES ──────────────────────────────────────────
 function loadPrayerTimes() {
   msgBg({ type: 'GET_PRAYER_TIMES' }).then(res => {
-    if (res?.ok && res.data) { prayerTimes = res.data; renderPrayerTimes(); }
+    if (res?.ok && res.data) {
+      prayerTimes = res.data;
+      renderPrayerTimes();
+    }
   });
 }
 
 function renderPrayerTimes() {
   if (!prayerTimes) return;
-  ['Fajr','Sunrise','Dhuhr','Asr','Maghrib','Isha'].forEach(p => {
+  const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+  prayers.forEach(p => {
     const el = $(`pt-${p}`);
-    if (el && prayerTimes[p]) el.textContent = prayerTimes[p].substring(0, 5);
+    if (el) el.textContent = (prayerTimes[p] || '—').substring(0, 5);
   });
-  const hijriEl = $('hijri-date');
-  if (hijriEl && prayerTimes.hijri) {
-    const h = prayerTimes.hijri;
-    hijriEl.textContent = `${h.day} ${h.month?.en || ''} ${h.year} AH`;
-  }
   highlightCurrentPrayer();
-  updateNextPrayerBanner();
+  updateNextPrayerPill();
 }
 
 function highlightCurrentPrayer() {
   if (!prayerTimes) return;
   const now = new Date();
   const nowMins = now.getHours() * 60 + now.getMinutes();
-  const prayers = ['Fajr','Dhuhr','Asr','Maghrib','Isha'];
-  document.querySelectorAll('.prayer-row').forEach(r => r.classList.remove('pr-current'));
+  const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+  document.querySelectorAll('.prayer-row').forEach(r => {
+    r.classList.remove('pr-current');
+    r.querySelector('.pr-next')?.remove();
+  });
   for (let i = 0; i < prayers.length; i++) {
     const t = (prayerTimes[prayers[i]] || '00:00').substring(0, 5);
     const [h, m] = t.split(':').map(Number);
     if (h * 60 + m > nowMins) {
-      document.querySelector(`.prayer-row[data-prayer="${prayers[i]}"]`)?.classList.add('pr-current');
+      const row = document.querySelector(`.prayer-row[data-prayer="${prayers[i]}"]`);
+      if (row) {
+        row.classList.add('pr-current');
+        const badge = document.createElement('span');
+        badge.className = 'pr-next';
+        badge.textContent = 'Next';
+        row.appendChild(badge);
+      }
       return;
     }
   }
 }
 
-function updateNextPrayerBanner() {
+function updateNextPrayerPill() {
   if (!prayerTimes) return;
   const now = new Date();
   const nowMins = now.getHours() * 60 + now.getMinutes();
-  const prayers = ['Fajr','Dhuhr','Asr','Maghrib','Isha'];
+  const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
   for (const p of prayers) {
     const t = (prayerTimes[p] || '00:00').substring(0, 5);
     const [h, m] = t.split(':').map(Number);
     if (h * 60 + m > nowMins) {
-      const npName = $('np-name'); if (npName) npName.textContent = p;
-      const npTime = $('np-time'); if (npTime) npTime.textContent = t;
+      const el = $('next-prayer-text');
+      if (el) el.textContent = `${p} at ${t}`;
       return;
     }
   }
-  const npName = $('np-name'); if (npName) npName.textContent = 'Fajr (tomorrow)';
-  const npTime = $('np-time'); if (npTime) npTime.textContent = (prayerTimes.Fajr||'—').substring(0,5);
+  const el = $('next-prayer-text');
+  if (el) el.textContent = `Fajr at ${(prayerTimes.Fajr || '—').substring(0, 5)} (tomorrow)`;
 }
 
-function startCountdown() {
-  if (countdownTimer) clearInterval(countdownTimer);
-  countdownTimer = setInterval(() => {
-    if (!prayerTimes) return;
-    const now = new Date();
-    const nowMins = now.getHours() * 60 + now.getMinutes();
-    const prayers = ['Fajr','Dhuhr','Asr','Maghrib','Isha'];
-    for (const p of prayers) {
-      const t = (prayerTimes[p] || '00:00').substring(0, 5);
-      const [h, m] = t.split(':').map(Number);
-      const diffMins = h * 60 + m - nowMins;
-      if (diffMins > 0) {
-        const el = $('np-countdown');
-        if (el) el.textContent = `in ${Math.floor(diffMins/60)}h ${diffMins%60}m`;
-        return;
-      }
-    }
-  }, 30000);
-}
-
-// ── QIBLA ─────────────────────────────────────────────────
-function setupQibla() {
-  $('qibla-locate')?.addEventListener('click', () => {
-    const btn = $('qibla-locate');
-    btn.textContent = 'Locating…'; btn.disabled = true;
-    if (!navigator.geolocation) { btn.textContent = 'Not available'; return; }
-    navigator.geolocation.getCurrentPosition((pos) => {
-      const lat = pos.coords.latitude;
-      const lon = pos.coords.longitude;
-      const qiblaDir = calcQibla(lat, lon);
-      const degEl = $('qibla-deg');
-      if (degEl) degEl.textContent = `${Math.round(qiblaDir)}°`;
-      const arrow = $('qibla-arrow');
-      if (arrow) arrow.style.transform = `rotate(${qiblaDir}deg)`;
-      btn.textContent = 'Update';
-      btn.disabled = false;
-    }, () => { btn.textContent = 'Location denied'; btn.disabled = false; });
-  });
-}
-
-function calcQibla(lat, lon) {
-  const MECCA_LAT = 21.4225; const MECCA_LON = 39.8262;
-  const φ1 = lat * Math.PI / 180; const φ2 = MECCA_LAT * Math.PI / 180;
-  const Δλ = (MECCA_LON - lon) * Math.PI / 180;
-  const y = Math.sin(Δλ) * Math.cos(φ2);
-  const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
-  return ((Math.atan2(y, x) * 180 / Math.PI) + 360) % 360;
-}
-
-// ── DASHBOARD ZAKAT ────────────────────────────────────────
-function setupDashboardZakat() {
-  $('dash-zakat-calc')?.addEventListener('click', () => {
-    const wealth = parseFloat($('dash-zakat-input')?.value) || 0;
-    const result = $('dash-zakat-result');
-    if (!result) return;
-    if (wealth <= 0) { result.style.display = 'none'; return; }
-    const NISAB = 22080;
-    result.style.display = 'block';
-    if (wealth < NISAB) {
-      result.innerHTML = `<span style="color:var(--jade)">✓ Below nisab (RM ${NISAB.toLocaleString()}). No Zakat due.</span>`;
+function checkApiHealth() {
+  const dot = document.querySelector('.as-dot');
+  const text = $('as-text');
+  if (!dot || !text) return;
+  text.textContent = 'Checking API…';
+  msgBg({ type: 'HEALTH_CHECK' }).then(res => {
+    if (res?.ok && res.data) {
+      const online = res.data.status === 'ok';
+      dot.className = `as-dot ${online ? 'online' : 'offline'}`;
+      text.textContent = online ? `API Online — v${res.data.version}` : 'API Degraded — Using local rules';
     } else {
-      const due = (wealth * 0.025).toFixed(2);
-      result.innerHTML = `<span style="color:var(--gold)">Zakat due: <strong>RM ${parseFloat(due).toLocaleString()}</strong> (2.5%)</span>`;
+      dot.className = 'as-dot offline';
+      text.textContent = 'API Offline — Using local rules';
     }
   });
-  $('dash-zakat-input')?.addEventListener('keydown', e => { if (e.key === 'Enter') $('dash-zakat-calc')?.click(); });
 }
 
-// ── ZAKAT TAB ─────────────────────────────────────────────
-function setupZakatTab() {
-  $('btn-zakat-calc')?.addEventListener('click', calculateZakatFull);
-  // Haul tracker
-  $('btn-set-haul')?.addEventListener('click', () => {
-    const inp = $('haul-date-input');
-    if (!inp) return;
-    if (inp.style.display === 'none') {
-      inp.style.display = 'block'; inp.focus();
-      inp.addEventListener('change', () => {
-        settings.haulStart = inp.value;
-        saveSettings(); renderHaulStatus(inp.value);
-        inp.style.display = 'none';
-        $('btn-set-haul').textContent = 'Change Date';
-      }, { once: true });
-    }
-  });
-  if (settings?.haulStart) renderHaulStatus(settings.haulStart);
-}
-
-function renderHaulStatus(dateStr) {
-  const start = new Date(dateStr);
-  const haulEnd = new Date(start);
-  haulEnd.setFullYear(haulEnd.getFullYear() + 1);
-  const daysLeft = Math.ceil((haulEnd - new Date()) / 86400000);
-  const startEl = $('haul-start');
-  const daysEl = $('haul-days');
-  if (startEl) startEl.textContent = start.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
-  if (daysEl) {
-    if (daysLeft > 0) daysEl.textContent = `${daysLeft} days`;
-    else { daysEl.textContent = 'Haul reached — calculate now'; daysEl.style.color = 'var(--gold)'; }
-  }
-  $('btn-set-haul').textContent = 'Change Date';
-}
-
-function calculateZakatFull() {
-  const cash = parseFloat($('zf-cash')?.value) || 0;
-  const gold = parseFloat($('zf-gold')?.value) || 0;
-  const business = parseFloat($('zf-business')?.value) || 0;
-  const invest = parseFloat($('zf-invest')?.value) || 0;
-  const recv = parseFloat($('zf-recv')?.value) || 0;
-  const total = cash + gold + business + invest + recv;
-  const NISAB = 22080;
-  const resultEl = $('zakat-result');
-  const amtEl = $('zr-amount');
-  const detailEl = $('zr-detail');
-  const bdownEl = $('zr-breakdown');
-  if (!resultEl) return;
-  resultEl.style.display = 'block';
-  if (total < NISAB) {
-    if (amtEl) amtEl.textContent = 'RM 0';
-    if (detailEl) detailEl.innerHTML = `<span style="color:var(--jade)">Total wealth RM ${total.toLocaleString()} is below nisab (RM ${NISAB.toLocaleString()}). No Zakat is due.</span>`;
-    if (bdownEl) bdownEl.innerHTML = '';
-    return;
-  }
-  const due = total * 0.025;
-  if (amtEl) amtEl.textContent = `RM ${due.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  if (detailEl) detailEl.innerHTML = `Total zakatable wealth: RM ${total.toLocaleString()} × 2.5%`;
-  if (bdownEl) {
-    const rows = [
-      ['Cash & Savings', cash], ['Gold', gold], ['Business', business],
-      ['Investments', invest], ['Receivables', recv]
-    ].filter(([, v]) => v > 0).map(([k, v]) =>
-      `<div class="zr-brow"><span>${k}</span><span>RM ${v.toLocaleString()}</span></div>`
-    ).join('');
-    bdownEl.innerHTML = rows;
-  }
-}
-
-function renderZakatRecipients() {
-  const el = $('zakat-recipients');
-  if (!el) return;
-  el.innerHTML = ZAKAT_RECIPIENTS.map(r => `
-    <div class="zr-org" onclick="chrome.tabs.create({url:'${r.url}',active:true})" style="cursor:pointer">
-      <div class="zro-name">${escHtml(r.name)}</div>
-      <div class="zro-country">${escHtml(r.country)}</div>
-      ${r.verified ? '<div class="zro-badge">✓ Verified</div>' : ''}
-    </div>`).join('');
-}
-
-// ── QURAN TAB ─────────────────────────────────────────────
-function setupQuranTab() {
-  loadVerseOfDay();
-  setupDhikr();
-  $('btn-load-surah')?.addEventListener('click', () => {
-    const num = parseInt($('surah-num')?.value);
-    if (num >= 1 && num <= 114) loadSurah(num);
-  });
-  $('surah-num')?.addEventListener('keydown', e => { if (e.key === 'Enter') $('btn-load-surah')?.click(); });
-  $('ayah-next')?.addEventListener('click', loadNextAyah);
-}
-
-async function loadVerseOfDay() {
-  const loadingEl = $('ayah-loading');
-  const arabicEl = $('ayah-arabic');
-  const transEl = $('ayah-translation');
-  const refEl = $('ayah-ref');
-  const nextBtn = $('ayah-next');
-  try {
-    // Use day-of-year to pick a consistent daily ayah (1-6236)
-    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
-    const ayahNum = (dayOfYear % 6236) + 1;
-    currentAyahAyah = ayahNum;
-    const r = await fetch(`https://api.alquran.cloud/v1/ayah/${ayahNum}/editions/quran-uthmani,en.asad`);
-    const d = await r.json();
-    if (d.code !== 200) throw new Error('API error');
-    const arabic = d.data[0]; const trans = d.data[1];
-    if (loadingEl) loadingEl.style.display = 'none';
-    if (arabicEl) { arabicEl.textContent = arabic.text; arabicEl.style.display = 'block'; }
-    if (transEl) { transEl.textContent = trans.text; transEl.style.display = 'block'; }
-    if (refEl) { refEl.textContent = `Surah ${arabic.surah.englishName} (${arabic.surah.number}:${arabic.numberInSurah})`; refEl.style.display = 'block'; }
-    if (nextBtn) nextBtn.style.display = 'block';
-    currentAyahSurah = arabic.surah.number;
-    currentAyahAyah = arabic.numberInSurah;
-  } catch(e) {
-    if (loadingEl) loadingEl.textContent = 'Could not load verse. Check connection.';
-  }
-}
-
-async function loadNextAyah() {
-  if (!currentAyahSurah || !currentAyahAyah) return;
-  const nextNum = currentAyahAyah + 1;
-  const loadingEl = $('ayah-loading');
-  const arabicEl = $('ayah-arabic');
-  const transEl = $('ayah-translation');
-  const refEl = $('ayah-ref');
-  try {
-    if (loadingEl) { loadingEl.textContent = 'Loading…'; loadingEl.style.display = 'block'; }
-    if (arabicEl) arabicEl.style.display = 'none';
-    if (transEl) transEl.style.display = 'none';
-    if (refEl) refEl.style.display = 'none';
-    const r = await fetch(`https://api.alquran.cloud/v1/ayah/${currentAyahSurah}:${nextNum}/editions/quran-uthmani,en.asad`);
-    const d = await r.json();
-    if (d.code !== 200) throw new Error('end of surah');
-    const arabic = d.data[0]; const trans = d.data[1];
-    if (loadingEl) loadingEl.style.display = 'none';
-    if (arabicEl) { arabicEl.textContent = arabic.text; arabicEl.style.display = 'block'; }
-    if (transEl) { transEl.textContent = trans.text; transEl.style.display = 'block'; }
-    if (refEl) { refEl.textContent = `Surah ${arabic.surah.englishName} (${arabic.surah.number}:${arabic.numberInSurah})`; refEl.style.display = 'block'; }
-    currentAyahAyah = arabic.numberInSurah;
-    currentAyahSurah = arabic.surah.number;
-  } catch(e) {
-    if (loadingEl) { loadingEl.textContent = 'End of surah.'; loadingEl.style.display = 'block'; }
-  }
-}
-
-async function loadSurah(num) {
-  const el = $('surah-display');
-  if (!el) return;
-  el.innerHTML = '<div style="color:var(--text-3);font-size:12px;padding:8px 0">Loading…</div>';
-  try {
-    const r = await fetch(`https://api.alquran.cloud/v1/surah/${num}/editions/quran-uthmani,en.asad`);
-    const d = await r.json();
-    if (d.code !== 200) throw new Error('API error');
-    const arabic = d.data[0]; const trans = d.data[1];
-    el.innerHTML = `
-      <div class="surah-header">
-        <div class="surah-name">${escHtml(arabic.englishName)}</div>
-        <div class="surah-arabic-name">${escHtml(arabic.name)}</div>
-        <div class="surah-meta">${escHtml(arabic.revelationType)} · ${arabic.numberOfAyahs} verses</div>
-      </div>
-      ${arabic.ayahs.slice(0, 10).map((a, i) => `
-        <div class="surah-ayah">
-          <div class="sa-num">${a.numberInSurah}</div>
-          <div class="sa-content">
-            <div class="sa-arabic">${escHtml(a.text)}</div>
-            <div class="sa-trans">${escHtml(trans.ayahs[i]?.text || '')}</div>
-          </div>
-        </div>`).join('')}
-      ${arabic.numberOfAyahs > 10 ? `<div style="text-align:center;margin:8px 0;font-size:11px;color:var(--text-3)">Showing first 10 of ${arabic.numberOfAyahs} verses</div>` : ''}
-    `;
-  } catch(e) {
-    el.innerHTML = '<div style="color:var(--ruby);font-size:12px;padding:8px 0">Could not load surah. Check connection.</div>';
-  }
-}
-
-// ── DHIKR COUNTER ──────────────────────────────────────────
-function setupDhikr() {
-  dhikrCount = 0; dhikrIdx = 0;
-  renderDhikr();
-  $('dhikr-tap')?.addEventListener('click', () => {
-    dhikrCount++;
-    const countEl = $('dhikr-count');
-    if (countEl) countEl.textContent = dhikrCount;
-    const dhikr = DHIKR_LIST[dhikrIdx];
-    if (dhikrCount >= dhikr.target) {
-      const btn = $('dhikr-tap');
-      if (btn) { btn.textContent = '✓ Complete!'; btn.style.background = 'var(--jade-dim)'; btn.style.color = 'var(--jade)'; }
-    }
-  });
-  $('dhikr-reset')?.addEventListener('click', () => {
-    dhikrCount = 0;
-    const countEl = $('dhikr-count');
-    if (countEl) countEl.textContent = '0';
-    const btn = $('dhikr-tap');
-    if (btn) { btn.textContent = 'Tap'; btn.style.background = ''; btn.style.color = ''; }
-  });
-  $('dhikr-next-phrase')?.addEventListener('click', () => {
-    dhikrIdx = (dhikrIdx + 1) % DHIKR_LIST.length;
-    dhikrCount = 0;
-    renderDhikr();
-  });
-}
-
-function renderDhikr() {
-  const dhikr = DHIKR_LIST[dhikrIdx];
-  const pEl = $('dhikr-phrase'); if (pEl) pEl.textContent = dhikr.phrase;
-  const tEl = $('dhikr-translation'); if (tEl) tEl.textContent = dhikr.trans;
-  const cEl = $('dhikr-count'); if (cEl) cEl.textContent = '0';
-  const trEl = $('dhikr-target'); if (trEl) trEl.textContent = `/ ${dhikr.target}`;
-  const btn = $('dhikr-tap');
-  if (btn) { btn.textContent = 'Tap'; btn.style.background = ''; btn.style.color = ''; }
-}
-
-// ── iSTORE ─────────────────────────────────────────────────
-function setupStore() {
-  renderApps('all');
-  document.querySelectorAll('.scat-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.scat-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      renderApps(btn.dataset.cat);
-    });
-  });
-  $('store-search')?.addEventListener('input', e => {
-    const q = e.target.value.toLowerCase();
-    document.querySelectorAll('.app-card').forEach(card => {
-      const name = card.querySelector('.ac-name')?.textContent?.toLowerCase() || '';
-      const desc = card.querySelector('.ac-desc')?.textContent?.toLowerCase() || '';
-      card.style.display = (!q || name.includes(q) || desc.includes(q)) ? '' : 'none';
-    });
-  });
-}
-
-function renderApps(cat) {
-  const grid = $('app-grid');
-  if (!grid) return;
-  const apps = cat === 'all' ? APP_DIRECTORY : APP_DIRECTORY.filter(a => a.cat === cat);
-  grid.innerHTML = apps.map(a => `
-    <div class="app-card p-section" data-url="${escHtml(a.url)}">
-      <div class="ac-icon">${a.icon}</div>
-      <div class="ac-body">
-        <div class="ac-name">${escHtml(a.name)}</div>
-        <div class="ac-desc">${escHtml(a.desc)}</div>
-        <div class="ac-meta">
-          <span class="ac-rating">★ ${a.rating}</span>
-          <span class="ac-price ${a.free ? 'free' : 'paid'}">${a.free ? 'Free' : 'Paid'}</span>
-        </div>
-      </div>
-      <div class="ac-open">›</div>
-    </div>`).join('');
-  grid.querySelectorAll('.app-card').forEach(card => {
-    card.addEventListener('click', () => {
-      chrome.tabs.create({ url: card.dataset.url, active: true });
-    });
-  });
-}
-
-// ── VERDICT (from content script) ─────────────────────────
 window.addEventListener('message', (e) => {
   if (!e.data) return;
   if (e.data.type === 'VERDICT') {
@@ -595,31 +608,50 @@ window.addEventListener('message', (e) => {
     if (card) {
       card.className = `verdict-card vc-${verdict.verdict}`;
       const icons = { safe: '✓', caution: '!', warning: '⚠', blocked: '✕' };
+      const icon = $('vc-icon');
+      if (icon) icon.textContent = icons[verdict.verdict] || '?';
       const labels = { safe: 'Safe', caution: 'Caution', warning: 'Warning', blocked: 'Blocked' };
       const subs = { safe: 'Permissible content', caution: 'Proceed with awareness', warning: 'Islamically problematic', blocked: 'Access blocked' };
-      const icon = $('vc-icon'); if (icon) icon.textContent = icons[verdict.verdict] || '?';
-      const lbl = $('vc-label'); if (lbl) lbl.textContent = labels[verdict.verdict] || verdict.verdict;
-      const sub = $('vc-sublabel'); if (sub) sub.textContent = subs[verdict.verdict] || '';
-      const desc = $('vc-desc'); if (desc) desc.textContent = verdict.reason || '';
+      const lbl = $('vc-label');
+      if (lbl) lbl.textContent = labels[verdict.verdict] || verdict.verdict;
+      const sub = $('vc-sublabel');
+      if (sub) sub.textContent = subs[verdict.verdict] || '';
+      const desc = $('vc-desc');
+      if (desc) desc.textContent = verdict.reason || '';
     }
-    if (verdict.quran) {
-      const ar = $('ev-arabic'); if (ar) ar.textContent = verdict.quran.arabic || '';
-      const q = $('ev-quote'); if (q) q.textContent = `"${verdict.quran.english}"`;
-      const r = $('ev-ref'); if (r) r.textContent = verdict.quran.ref || '';
+
+    const quran = verdict.quran;
+    if (quran) {
+      const ar = $('ev-arabic');
+      if (ar) ar.textContent = quran.arabic || '';
+      const q = $('ev-quote');
+      if (q) q.textContent = `"${quran.english}"`;
+      const r = $('ev-ref');
+      if (r) r.textContent = quran.ref || '';
+
+      // ── Whisper Guidance: brief explanation of WHY this grade was given ──
+      const briefEl = $('ev-brief-explanation');
+      if (briefEl && quran.briefExplanation) {
+        briefEl.textContent = quran.briefExplanation;
+        briefEl.style.display = '';
+      } else if (briefEl) {
+        briefEl.style.display = 'none';
+      }
     }
+
     const alts = $('alts-list');
     if (alts && verdict.alternatives?.length) {
       alts.innerHTML = verdict.alternatives.map(a => `
         <div class="alt-row" data-url="${escHtml(a.url)}">
           <div class="alt-favicon">🔗</div>
-          <div style="flex:1"><div class="alt-name">${escHtml(a.title)}</div></div>
+          <div style="flex:1;"><div class="alt-name">${escHtml(a.title)}</div></div>
           <svg class="alt-arr" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </div>`).join('');
       alts.querySelectorAll('.alt-row').forEach(row => {
         row.addEventListener('click', () => window.open(row.dataset.url, '_blank', 'noopener'));
       });
     } else if (alts) {
-      alts.innerHTML = '';
+      alts.innerHTML = '<div style="font-size:11px;color:var(--text-3);padding:4px 0;">No alternatives to suggest for this page.</div>';
     }
   }
 });

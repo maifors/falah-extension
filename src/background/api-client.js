@@ -1,6 +1,5 @@
 const FALAH_API = 'https://app-814845252352.us-central1.run.app';
 const ISTORE_API = 'http://localhost:3000';
-const DEV_API = 'https://dev.falah-os.com/api';   // ← NEW: Mock-Net dev portal
 
 export class FalahApiClient {
   constructor() {
@@ -126,56 +125,6 @@ export class FalahApiClient {
   async getZakatHistory(userId) {
     return this._fetch(`${FALAH_API}/zakat/api/zakat/history/${userId}`);
   }
-
-  // ── DEV PORTAL / MOCK-NET API METHODS ─────────────────────────────
-
-  /** GET /api/health — full sovereign service status */
-  async devHealth() {
-    return this._fetch(`${DEV_API}/health`);
-  }
-
-  /** POST /api/identity/register — create a new Ummah ID via Mock-Net */
-  async devRegisterIdentity(jurisdiction = 'MY', level = 'standard') {
-    return this._fetch(`${DEV_API}/identity/register`, {
-      method: 'POST',
-      body: JSON.stringify({ jurisdiction, level })
-    });
-  }
-
-  /** GET /api/identity/verify — verify an Ummah ID */
-  async devVerifyIdentity(ummahId) {
-    return this._fetch(`${DEV_API}/identity/verify?ummah_id=${encodeURIComponent(ummahId)}`);
-  }
-
-  /** POST /api/wallet/create — create a sovereign wallet */
-  async devCreateWallet(ummahId, currency = 'FLH') {
-    return this._fetch(`${DEV_API}/wallet/create`, {
-      method: 'POST',
-      body: JSON.stringify({ ummah_id: ummahId, currency })
-    });
-  }
-
-  /** GET /api/wallet/balance — get wallet balance */
-  async devGetBalance(walletId) {
-    return this._fetch(`${DEV_API}/wallet/balance?wallet_id=${encodeURIComponent(walletId)}`);
-  }
-
-  /** GET /api/contracts/templates — list RAMZ contract templates */
-  async devGetContractTemplates() {
-    return this._fetch(`${DEV_API}/contracts/templates`);
-  }
-
-  /** POST /api/contracts/execute — execute a Shariah contract */
-  async devExecuteContract(contractType, amount, currency = 'FLH', parties = null) {
-    const body = { contract_type: contractType, amount, currency };
-    if (parties) body.parties = parties;
-    return this._fetch(`${DEV_API}/contracts/execute`, {
-      method: 'POST',
-      body: JSON.stringify(body)
-    });
-  }
-
-  // ── EXISTING MOCK HELPERS ──────────────────────────────────────────
 
   getMockCatalog() {
     return {

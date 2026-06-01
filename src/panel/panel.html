@@ -19,7 +19,7 @@
     </svg>
     <div>
       <div class="p-brand-name">Falah OS</div>
-      <div class="p-brand-sub" id="brand-sub">Sovereign Islamic Browser</div>
+      <div class="p-brand-sub" id="brand-sub">Not connected</div>
     </div>
     <button class="p-close-btn" id="btn-close" title="Close panel">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -31,24 +31,20 @@
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
       Home
     </button>
-    <button class="p-tab" data-tab="prayer">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 017 7c0 5-7 13-7 13S5 14 5 9a7 7 0 017-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
-      Prayer
-    </button>
     <button class="p-tab" data-tab="store">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
       iStore
+    </button>
+    <button class="p-tab" data-tab="wallet">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 010-4h14v4"/><path d="M3 5v14a2 2 0 002 2h16v-5"/><path d="M18 12a2 2 0 000 4h4v-4z"/></svg>
+      Wallet
     </button>
     <button class="p-tab" data-tab="zakat">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
       Zakat
     </button>
-    <button class="p-tab" data-tab="quran">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
-      Quran
-    </button>
     <button class="p-tab" data-tab="settings">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83"/></svg>
       Config
     </button>
   </nav>
@@ -56,274 +52,189 @@
 
 <div class="p-body">
 
-  <!-- ═══════════════════════════════════════════════════════
-       TAB: DASHBOARD
-  ════════════════════════════════════════════════════════ -->
   <div class="p-tab-content active" id="tab-dashboard">
 
-    <!-- Shariah Verdict — LIVE: runs local classifier on every page -->
-    <div class="p-section" id="section-verdict">
-      <div class="p-section-title">
-        <span class="live-dot"></span>
-        Page Verdict
+    <div class="p-section" id="section-auth">
+      <div class="p-section-title">Ummah ID</div>
+      <div id="auth-view">
+        <div class="login-card">
+          <div class="login-icon">👤</div>
+          <div class="login-title">Connect to Falah OS</div>
+          <div class="login-sub">Sign in with your Ummah ID to access wallet, iStore, and more.</div>
+          <input class="login-input" id="login-email" type="email" placeholder="Email">
+          <input class="login-input" id="login-password" type="password" placeholder="Password">
+          <button class="login-btn" id="btn-login">Sign In</button>
+          <button class="login-btn-demo" id="btn-demo">Demo Mode (Offline Sandbox)</button>
+          <div class="login-error" id="login-error"></div>
+        </div>
       </div>
+      <div id="profile-view" style="display:none">
+        <div class="profile-card">
+          <div class="profile-avatar" id="profile-avatar">👤</div>
+          <div class="profile-info">
+            <div class="profile-name" id="profile-name">—</div>
+            <div class="profile-ummah" id="profile-ummah">Ummah ID: —</div>
+          <div class="profile-demo-badge" id="profile-demo-badge" style="display:none">🧪 Demo</div>
+          </div>
+          <button class="profile-logout" id="btn-logout">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-section">
+      <div class="p-section-title">Wallet</div>
+      <div class="wallet-card" id="wallet-card">
+        <div class="wallet-balance" id="wallet-balance">—</div>
+        <div class="wallet-currency">FLH</div>
+        <div class="wallet-address" id="wallet-address">—</div>
+      </div>
+      <div class="wallet-stats">
+        <div class="ws-box"><span class="ws-val" id="ws-total">—</span><span class="ws-lbl">Total Wallets</span></div>
+        <div class="ws-box"><span class="ws-val" id="ws-volume">—</span><span class="ws-lbl">Volume</span></div>
+        <div class="ws-box"><span class="ws-val" id="ws-fee">1.5%</span><span class="ws-lbl">Protocol Fee</span></div>
+      </div>
+    </div>
+
+    <div class="p-section" id="section-verdict">
+      <div class="p-section-title">Page Verdict</div>
       <div class="verdict-card" id="verdict-card">
         <div class="vc-top">
           <div class="vc-icon" id="vc-icon">✓</div>
           <div>
-            <div class="vc-label" id="vc-label">Analysing…</div>
-            <div class="vc-sublabel" id="vc-sublabel">Shariah compliance engine active</div>
+            <div class="vc-label" id="vc-label">Safe</div>
+            <div class="vc-sublabel" id="vc-sublabel">Permissible content</div>
           </div>
         </div>
-        <div class="vc-desc" id="vc-desc">Waiting for page signal</div>
+        <div class="vc-desc" id="vc-desc">Falah OS — Shariah compliance engine active</div>
       </div>
       <div class="evidence-card" style="margin-top:8px">
         <div class="ev-arabic" id="ev-arabic">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
         <div class="ev-quote" id="ev-quote">"In the name of Allah, the Most Gracious, the Most Merciful."</div>
         <div class="ev-ref" id="ev-ref">Quran 1:1</div>
+        <div class="ev-brief-explanation" id="ev-brief-explanation" style="display:none"></div>
       </div>
       <div id="alts-list" style="margin-top:6px"></div>
     </div>
 
-    <!-- Next Prayer Pill — LIVE: from aladhan.com API -->
-    <div class="p-section" id="section-next-prayer" style="padding:10px 14px">
-      <div class="next-prayer-banner" id="next-prayer-banner">
-        <div class="np-icon">🕌</div>
-        <div class="np-info">
-          <div class="np-label">Next Salah</div>
-          <div class="np-name" id="np-name">Loading…</div>
-        </div>
-        <div class="np-time" id="np-time">—</div>
-        <div class="np-countdown" id="np-countdown"></div>
-      </div>
-    </div>
-
-    <!-- Zakat Quick Calc — LIVE: local calculation -->
     <div class="p-section">
-      <div class="p-section-title">
-        <span class="live-dot"></span>
-        Zakat Check
+      <div class="p-section-title">Network</div>
+      <div class="network-row">
+        <span>Falah OS Gateway</span>
+        <span class="nr-status" id="nr-gateway">Checking…</span>
       </div>
-      <div class="zq-row">
-        <input class="zq-input" id="dash-zakat-input" type="number" placeholder="Enter your wealth (MYR)">
-        <button class="zq-btn" id="dash-zakat-calc">Check</button>
+      <div class="network-row">
+        <span>Ummah ID</span>
+        <span class="nr-status" id="nr-ummah">Checking…</span>
       </div>
-      <div id="dash-zakat-result" style="display:none" class="zq-result"></div>
-    </div>
-
-    <!-- Qibla Direction — LIVE: browser Geolocation API -->
-    <div class="p-section">
-      <div class="p-section-title">
-        <span class="live-dot"></span>
-        Qibla Direction
+      <div class="network-row">
+        <span>Wallet</span>
+        <span class="nr-status" id="nr-wallet">Checking…</span>
       </div>
-      <div class="qibla-card" id="qibla-card">
-        <div class="qibla-compass" id="qibla-compass">
-          <div class="qibla-arrow" id="qibla-arrow">▲</div>
-          <div class="qibla-kaaba">🕋</div>
-        </div>
-        <div class="qibla-info">
-          <div class="qibla-deg" id="qibla-deg">—°</div>
-          <div class="qibla-label">from North</div>
-          <button class="qibla-btn" id="qibla-locate">Get Direction</button>
-        </div>
+      <div class="network-row">
+        <span>Mock-Net</span>
+        <span class="nr-status" id="nr-mocknet">Checking…</span>
       </div>
     </div>
 
-    <!-- Page Shield Settings shortcut -->
     <div class="p-section">
       <div class="p-section-title">Quick Actions</div>
       <div class="qa-grid">
-        <button class="qa-btn" data-tab="prayer"><span class="qa-icon">🕌</span> Prayer</button>
-        <button class="qa-btn" data-tab="zakat"><span class="qa-icon">🤲</span> Zakat</button>
-        <button class="qa-btn" data-tab="quran"><span class="qa-icon">📖</span> Quran</button>
         <button class="qa-btn" data-tab="store"><span class="qa-icon">🏪</span> iStore</button>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════════
-       TAB: PRAYER — LIVE via aladhan.com
-  ════════════════════════════════════════════════════════ -->
-  <div class="p-tab-content" id="tab-prayer">
-
-    <div class="p-section">
-      <div class="p-section-title">
-        <span class="live-dot"></span>
-        Prayer Times
-        <span class="city-label" id="prayer-city-label">Kuala Lumpur</span>
-      </div>
-      <div class="prayer-grid" id="prayer-grid">
-        <div class="prayer-row" data-prayer="Fajr">
-          <div class="pr-name">Fajr</div>
-          <div class="pr-arabic">الفجر</div>
-          <div class="pr-time" id="pt-Fajr">—</div>
-        </div>
-        <div class="prayer-row" data-prayer="Sunrise">
-          <div class="pr-name">Sunrise</div>
-          <div class="pr-arabic">الشروق</div>
-          <div class="pr-time" id="pt-Sunrise">—</div>
-        </div>
-        <div class="prayer-row" data-prayer="Dhuhr">
-          <div class="pr-name">Dhuhr</div>
-          <div class="pr-arabic">الظهر</div>
-          <div class="pr-time" id="pt-Dhuhr">—</div>
-        </div>
-        <div class="prayer-row" data-prayer="Asr">
-          <div class="pr-name">Asr</div>
-          <div class="pr-arabic">العصر</div>
-          <div class="pr-time" id="pt-Asr">—</div>
-        </div>
-        <div class="prayer-row" data-prayer="Maghrib">
-          <div class="pr-name">Maghrib</div>
-          <div class="pr-arabic">المغرب</div>
-          <div class="pr-time" id="pt-Maghrib">—</div>
-        </div>
-        <div class="prayer-row" data-prayer="Isha">
-          <div class="pr-name">Isha</div>
-          <div class="pr-arabic">العشاء</div>
-          <div class="pr-time" id="pt-Isha">—</div>
-        </div>
-      </div>
-      <div class="hijri-date" id="hijri-date"></div>
-    </div>
-
-    <div class="p-section">
-      <div class="p-section-title">Location</div>
-      <div class="loc-row">
-        <input class="loc-input" id="loc-city" type="text" placeholder="City" value="Kuala Lumpur">
-        <input class="loc-input" id="loc-country" type="text" placeholder="Country" value="Malaysia">
-      </div>
-      <button class="save-btn" id="btn-save-location">Update Prayer Times</button>
-      <button class="save-btn save-btn-secondary" id="btn-detect-location" style="margin-top:6px">📍 Use My Location</button>
-    </div>
-
-    <div class="p-section">
-      <div class="p-section-title">Notification Settings</div>
-      <div class="toggle-row" data-key="prayerNotifications">
-        <div><div class="tr-label">Prayer Alerts</div><div class="tr-sub">Notify at each Salah time</div></div>
-        <div class="toggle-sw on"></div>
-      </div>
-      <div class="toggle-row" data-key="adhanSound">
-        <div><div class="tr-label">Adhan Sound</div><div class="tr-sub">Audio reminder at prayer time</div></div>
-        <div class="toggle-sw"></div>
-      </div>
-    </div>
-
-    <div class="p-section">
-      <div class="evidence-card">
-        <div class="ev-arabic">حَافِظُوا عَلَى الصَّلَوَاتِ وَالصَّلَاةِ الْوُسْطَىٰ</div>
-        <div class="ev-quote">"Guard strictly the prayers, especially the middle prayer."</div>
-        <div class="ev-ref">Quran 2:238</div>
+        <button class="qa-btn" data-tab="wallet"><span class="qa-icon">💰</span> Wallet</button>
+        <button class="qa-btn" data-tab="zakat"><span class="qa-icon">🤲</span> Zakat</button>
+        <button class="qa-btn" data-action="prayer"><span class="qa-icon">🕌</span> Prayer</button>
       </div>
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════
-       TAB: iSTORE — LIVE links to real apps
-  ════════════════════════════════════════════════════════ -->
   <div class="p-tab-content" id="tab-store">
-
     <div class="p-section">
       <div class="p-section-title">
-        <span class="live-dot"></span>
-        Halal App Directory
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="vertical-align:middle;margin-right:4px"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
+        Halal iStore
       </div>
-      <input class="store-search" id="store-search" type="text" placeholder="Search halal apps…">
     </div>
 
     <div class="p-section">
-      <div class="store-cats" id="store-cats">
-        <button class="scat-btn active" data-cat="all">All</button>
-        <button class="scat-btn" data-cat="spirituality">Spirituality</button>
-        <button class="scat-btn" data-cat="finance">Finance</button>
-        <button class="scat-btn" data-cat="lifestyle">Lifestyle</button>
-        <button class="scat-btn" data-cat="education">Education</button>
-        <button class="scat-btn" data-cat="productivity">Productivity</button>
-      </div>
+      <input class="store-search" id="store-search" type="text" placeholder="Search apps…">
     </div>
 
-    <div id="app-grid"></div>
+    <div class="p-section" id="section-flagship">
+      <div class="p-section-title">Flagship Apps</div>
+      <div id="flagship-list"></div>
+    </div>
 
+    <div class="p-section">
+      <div class="p-section-title">Categories</div>
+      <div class="cat-grid" id="cat-grid"></div>
+    </div>
+
+    <div class="p-section">
+      <div class="p-section-title">All Apps</div>
+      <div id="app-grid"></div>
+    </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════
-       TAB: ZAKAT — LIVE local calculation
-  ════════════════════════════════════════════════════════ -->
-  <div class="p-tab-content" id="tab-zakat">
+  <div class="p-tab-content" id="tab-wallet">
+    <div class="p-section">
+      <div class="p-section-title">Your Wallet</div>
+      <div class="wallet-large" id="wallet-large">
+        <div class="wl-balance" id="wl-balance">—</div>
+        <div class="wl-currency">FLH</div>
+        <div class="wl-address" id="wl-address">—</div>
+      </div>
+      <div class="wl-actions">
+        <button class="wl-btn" id="wl-create">Create Wallet</button>
+        <button class="wl-btn wl-btn-secondary" id="wl-refresh">Refresh</button>
+      </div>
+    </div>
 
     <div class="p-section">
-      <div class="p-section-title">
-        <span class="live-dot"></span>
-        Zakat al-Mal Calculator
+      <div class="p-section-title">Recent Transactions</div>
+      <div id="tx-list">
+        <div class="tx-empty">Sign in to view transactions</div>
       </div>
-      <div class="zakat-form">
-        <div class="zf-asset-section">
-          <div class="zf-asset-title">Cash &amp; Bank Savings (MYR)</div>
-          <input class="zf-input" id="zf-cash" type="number" placeholder="0" min="0">
-        </div>
-        <div class="zf-asset-section">
-          <div class="zf-asset-title">Gold Value (MYR)</div>
-          <input class="zf-input" id="zf-gold" type="number" placeholder="0" min="0">
-        </div>
-        <div class="zf-asset-section">
-          <div class="zf-asset-title">Business Inventory (MYR)</div>
-          <input class="zf-input" id="zf-business" type="number" placeholder="0" min="0">
-        </div>
-        <div class="zf-asset-section">
-          <div class="zf-asset-title">Investments &amp; Shares (MYR)</div>
-          <input class="zf-input" id="zf-invest" type="number" placeholder="0" min="0">
-        </div>
-        <div class="zf-asset-section">
-          <div class="zf-asset-title">Outstanding Receivables (MYR)</div>
-          <input class="zf-input" id="zf-recv" type="number" placeholder="0" min="0">
-        </div>
-        <div class="zf-nisab-row">
-          <span>Current Nisab Threshold</span>
-          <strong id="zf-nisab">RM 22,080</strong>
-        </div>
-        <div class="zf-nisab-row" style="font-size:10px;color:var(--text-3);margin-top:2px">
-          Based on 85g gold × ~RM 260/g · Updated periodically
-        </div>
-        <button class="zf-btn" id="btn-zakat-calc">Calculate My Zakat</button>
-      </div>
+    </div>
 
+    <div class="p-section">
+      <div class="p-section-title">Network Stats</div>
+      <div class="ws-grid">
+        <div class="ws-item"><span class="ws-item-val" id="ws-total-wallets">—</span><span class="ws-item-lbl">Total Wallets</span></div>
+        <div class="ws-item"><span class="ws-item-val" id="ws-total-tx">—</span><span class="ws-item-lbl">Transactions</span></div>
+        <div class="ws-item"><span class="ws-item-val" id="ws-total-volume">—</span><span class="ws-item-lbl">Volume (FLH)</span></div>
+        <div class="ws-item"><span class="ws-item-val" id="ws-fee-pct">1.5%</span><span class="ws-item-lbl">Protocol Fee</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="p-tab-content" id="tab-zakat">
+    <div class="p-section">
+      <div class="p-section-title">Zakat Calculator</div>
+      <div class="zakat-form">
+        <div class="zf-label">Total Wealth (MYR)</div>
+        <input class="zf-input" id="zakat-wealth" type="number" placeholder="e.g. 50000">
+        <div class="zf-nisab">Nisab threshold: <strong id="zf-nisab">RM 20,000</strong></div>
+        <button class="zf-btn" id="btn-zakat-calc">Calculate</button>
+      </div>
       <div id="zakat-result" style="display:none">
         <div class="zr-card">
-          <div class="zr-breakdown" id="zr-breakdown"></div>
-          <div class="zr-title">Total Zakat Due</div>
+          <div class="zr-title">Zakat Payable</div>
           <div class="zr-amount" id="zr-amount">RM 0</div>
           <div class="zr-detail" id="zr-detail"></div>
+          <button class="zf-btn" id="btn-zakat-pay" style="margin-top:8px">Pay Zakat</button>
         </div>
       </div>
     </div>
 
     <div class="p-section">
-      <div class="p-section-title">Haul Tracker</div>
-      <div class="haul-card">
-        <div class="haul-row">
-          <span class="haul-label">Zakat Year Started</span>
-          <span class="haul-val" id="haul-start">Not set</span>
-        </div>
-        <div class="haul-row">
-          <span class="haul-label">Days Until Haul</span>
-          <span class="haul-val" id="haul-days">—</span>
-        </div>
-        <button class="save-btn" id="btn-set-haul" style="margin-top:8px">Set Haul Start Date</button>
-        <input type="date" id="haul-date-input" style="display:none" class="zf-input">
+      <div class="p-section-title">Payment History</div>
+      <div id="zakat-history">
+        <div class="tx-empty">No zakat payments yet</div>
       </div>
     </div>
 
     <div class="p-section">
-      <div class="p-section-title">
-        <span class="live-dot"></span>
-        Verified Zakat Recipients
-      </div>
-      <div id="zakat-recipients"></div>
-    </div>
-
-    <div class="p-section">
+      <div class="p-section-title">Shariah Evidence</div>
       <div class="evidence-card">
         <div class="ev-arabic">خُذْ مِنْ أَمْوَالِهِمْ صَدَقَةً تُطَهِّرُهُمْ وَتُزَكِّيهِم بِهَا</div>
         <div class="ev-quote">"Take from their wealth a charity to purify and sanctify them."</div>
@@ -332,59 +243,7 @@
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════
-       TAB: QURAN — LIVE via alquran.cloud API
-  ════════════════════════════════════════════════════════ -->
-  <div class="p-tab-content" id="tab-quran">
-
-    <div class="p-section">
-      <div class="p-section-title">
-        <span class="live-dot"></span>
-        Verse of the Day
-      </div>
-      <div class="ayah-card" id="ayah-card">
-        <div class="ayah-loading" id="ayah-loading">Loading…</div>
-        <div class="ayah-arabic" id="ayah-arabic" style="display:none"></div>
-        <div class="ayah-translation" id="ayah-translation" style="display:none"></div>
-        <div class="ayah-ref" id="ayah-ref" style="display:none"></div>
-        <button class="ayah-next-btn" id="ayah-next" style="display:none">Next Verse ›</button>
-      </div>
-    </div>
-
-    <div class="p-section">
-      <div class="p-section-title">
-        <span class="live-dot"></span>
-        Browse Surah
-      </div>
-      <div class="surah-search-row">
-        <input class="loc-input" id="surah-num" type="number" min="1" max="114" placeholder="Surah no. (1–114)">
-        <button class="save-btn" id="btn-load-surah" style="margin:0;width:auto;padding:6px 10px">Load</button>
-      </div>
-      <div id="surah-display" style="margin-top:10px"></div>
-    </div>
-
-    <div class="p-section">
-      <div class="p-section-title">Dhikr Counter</div>
-      <div class="dhikr-card">
-        <div class="dhikr-phrase" id="dhikr-phrase">سُبْحَانَ اللَّهِ</div>
-        <div class="dhikr-translation" id="dhikr-translation">SubhanAllah — Glory be to Allah</div>
-        <div class="dhikr-count" id="dhikr-count">0</div>
-        <div class="dhikr-target" id="dhikr-target">/ 33</div>
-        <button class="dhikr-tap-btn" id="dhikr-tap">Tap</button>
-        <div class="dhikr-controls">
-          <button class="dhikr-ctrl" id="dhikr-reset">Reset</button>
-          <button class="dhikr-ctrl" id="dhikr-next-phrase">Next Dhikr</button>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════════
-       TAB: SETTINGS
-  ════════════════════════════════════════════════════════ -->
   <div class="p-tab-content" id="tab-settings">
-
     <div class="p-section">
       <div class="p-section-title">Shariah Guidance Level</div>
       <div class="guidance-row" id="guidance-row">
@@ -396,37 +255,31 @@
     </div>
 
     <div class="p-section">
-      <div class="p-section-title">Page Shield</div>
-      <div class="toggle-row" data-key="subbarEnabled">
-        <div><div class="tr-label">Verdict Subbar</div><div class="tr-sub">Show compliance bar below address bar</div></div>
-        <div class="toggle-sw on"></div>
-      </div>
+      <div class="p-section-title">Features</div>
+      <div class="toggle-row" data-key="subbarEnabled"><div><div class="tr-label">Verdict Subbar</div><div class="tr-sub">Bar below address bar</div></div><div class="toggle-sw on"></div></div>
+      <div class="toggle-row" data-key="prayerNotifications"><div><div class="tr-label">Prayer Notifications</div><div class="tr-sub">Alert at each Salah</div></div><div class="toggle-sw on"></div></div>
+      <div class="toggle-row" data-key="adhanSound"><div><div class="tr-label">Adhan Sound</div><div class="tr-sub">Audio at prayer time</div></div><div class="toggle-sw"></div></div>
+      <div class="toggle-row" data-key="adBlocking"><div><div class="tr-label">Ad Blocking</div><div class="tr-sub">Network-level ad removal</div></div><div class="toggle-sw on"></div></div>
+      <div class="toggle-row" data-key="trackerBlocking"><div><div class="tr-label">Tracker Blocking</div><div class="tr-sub">Cross-site tracking prevention</div></div><div class="toggle-sw on"></div></div>
     </div>
 
-    <!-- COMING SOON section — amber coded -->
-    <div class="p-section coming-soon-section">
-      <div class="p-section-title cs-title">
-        <span class="cs-dot"></span>
-        Coming Soon — Falah OS Account
+    <div class="p-section">
+      <div class="p-section-title">Location (Prayer Times)</div>
+      <div class="loc-row">
+        <input class="loc-input" id="loc-city" type="text" placeholder="City" value="Kuala Lumpur">
+        <input class="loc-input" id="loc-country" type="text" placeholder="Country" value="Malaysia">
       </div>
-      <div class="cs-desc">Sign in with your Ummah ID to unlock wallet, transaction history, and RAMZ contracts. Backend launches with Falah OS v1.0.</div>
-      <div class="cs-features">
-        <div class="cs-item">💰 FLH Wallet &amp; Balance</div>
-        <div class="cs-item">📜 RAMZ Shariah Contracts</div>
-        <div class="cs-item">🏪 iStore Purchases</div>
-        <div class="cs-item">🛡️ Ummah ID Verified Profile</div>
-      </div>
-      <a class="cs-notify-btn" href="https://falah-os.com" target="_blank" rel="noopener">Get Early Access →</a>
+      <button class="save-btn" id="btn-save-location">Save Location</button>
     </div>
 
     <div class="p-section">
       <div class="api-status" id="api-status">
-        <div class="as-dot online"></div>
-        <span id="as-text">Prayer API — Online</span>
+        <div class="as-dot"></div>
+        <span id="as-text">Checking API…</span>
       </div>
       <div style="text-align:center;margin-top:12px">
         <div style="font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:var(--text-3)">Falah OS Extension v2.1</div>
-        <div style="font-size:10px;color:var(--text-3);margin-top:3px">aladhan.com · alquran.cloud · browser geolocation</div>
+        <div style="font-size:10px;color:var(--text-3);margin-top:3px">Connected to Falah OS Gateway</div>
       </div>
     </div>
   </div>
