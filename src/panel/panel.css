@@ -197,6 +197,27 @@ body {
 }
 .ev-quote  { font-size: 11.5px; color: var(--text-2); line-height: 1.6; font-style: italic; margin-bottom: 5px; }
 .ev-ref    { font-size: 10.5px; color: var(--gold); font-weight: 500; }
+.ev-brief-explanation {
+  margin-top: 10px;
+  padding: 9px 11px;
+  background: rgba(201,152,60,0.06);
+  border: 1px solid rgba(201,152,60,0.18);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--text-2);
+  line-height: 1.65;
+  position: relative;
+}
+.ev-brief-explanation::before {
+  content: '🕌 Whisper Says';
+  display: block;
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 5px;
+}
 
 /* ── Alternatives ───────────────────────────────────────────── */
 .alt-row {

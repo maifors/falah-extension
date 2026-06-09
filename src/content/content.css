@@ -310,3 +310,588 @@ html.falah-panel-open #falah-panel-container {
   color: rgba(255,255,255,0.6) !important;
   border-color: rgba(255,255,255,0.2) !important;
 }
+
+/* ================================================================
+   Falah Extension — Floating Widget System
+   Injected into every page for draggable, persistent widgets.
+   ================================================================ */
+
+.falah-widget {
+  position: fixed !important;
+  z-index: 2147483644 !important;
+  background: rgba(13,13,16,0.96) !important;
+  border: 1px solid rgba(201,152,60,0.15) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  min-width: 260px !important;
+  max-width: 340px !important;
+  overflow: hidden !important;
+  transition: box-shadow 0.2s ease !important;
+  box-sizing: border-box !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+}
+
+.falah-widget * {
+  box-sizing: border-box !important;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+.falah-widget.fw-dragging {
+  box-shadow: 0 16px 48px rgba(0,0,0,0.6) !important;
+  cursor: grabbing !important;
+}
+
+.falah-widget.fw-minimized .fw-body {
+  display: none !important;
+}
+
+.falah-widget.fw-hidden {
+  display: none !important;
+}
+
+.fw-header {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 9px 10px !important;
+  cursor: grab !important;
+  user-select: none !important;
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+  background: rgba(19,19,23,0.6) !important;
+}
+
+.fw-header:active {
+  cursor: grabbing !important;
+}
+
+.fw-icon {
+  font-size: 15px !important;
+  flex-shrink: 0 !important;
+  line-height: 1 !important;
+}
+
+.fw-title {
+  flex: 1 !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  color: rgba(255,255,255,0.85) !important;
+  letter-spacing: 0.01em !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.fw-actions {
+  display: flex !important;
+  gap: 2px !important;
+  flex-shrink: 0 !important;
+}
+
+.fw-btn {
+  width: 22px !important;
+  height: 22px !important;
+  border-radius: 5px !important;
+  border: none !important;
+  background: transparent !important;
+  color: rgba(255,255,255,0.3) !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 10px !important;
+  transition: all 0.15s ease !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+}
+
+.fw-btn:hover {
+  background: rgba(255,255,255,0.08) !important;
+  color: rgba(255,255,255,0.7) !important;
+}
+
+.fw-btn.fw-sticky-active {
+  color: #c9983c !important;
+}
+
+.fw-btn.fw-sticky-active:hover {
+  background: rgba(201,152,60,0.15) !important;
+}
+
+.fw-body {
+  padding: 10px 12px !important;
+  max-height: 320px !important;
+  overflow-y: auto !important;
+}
+
+.fw-body::-webkit-scrollbar {
+  width: 3px !important;
+}
+
+.fw-body::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1) !important;
+  border-radius: 2px !important;
+}
+
+/* ── Prayer Times Widget ──────────────────────────────────── */
+.fw-prayer-next {
+  text-align: center !important;
+  padding: 4px 0 10px !important;
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+  margin-bottom: 8px !important;
+}
+
+.fw-prayer-lbl {
+  font-size: 10px !important;
+  color: rgba(255,255,255,0.4) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  margin-bottom: 2px !important;
+}
+
+.fw-prayer-name {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: rgba(255,255,255,0.8) !important;
+}
+
+.fw-prayer-time {
+  font-size: 22px !important;
+  font-weight: 600 !important;
+  color: #10b981 !important;
+  line-height: 1.2 !important;
+}
+
+.fw-prayer-countdown {
+  font-size: 10.5px !important;
+  color: rgba(255,255,255,0.35) !important;
+  margin-top: 3px !important;
+}
+
+.fw-prayer-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+}
+
+.fw-prayer-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 4px 6px !important;
+  border-radius: 4px !important;
+  font-size: 11px !important;
+}
+
+.fw-prayer-row.fw-prayer-active {
+  background: rgba(201,152,60,0.1) !important;
+}
+
+.fw-prayer-row.fw-prayer-active .fw-prayer-label {
+  color: #c9983c !important;
+  font-weight: 500 !important;
+}
+
+.fw-prayer-label {
+  color: rgba(255,255,255,0.55) !important;
+}
+
+.fw-prayer-val {
+  font-family: 'JetBrains Mono', 'Menlo', monospace !important;
+  color: rgba(255,255,255,0.7) !important;
+  font-size: 10.5px !important;
+}
+
+/* ── Halal Checker Widget ─────────────────────────────────── */
+.fw-halal-input {
+  display: flex !important;
+  gap: 6px !important;
+  margin-bottom: 8px !important;
+}
+
+.fw-halal-field {
+  flex: 1 !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 6px !important;
+  color: rgba(255,255,255,0.85) !important;
+  font-size: 11px !important;
+  outline: none !important;
+  transition: border-color 0.15s !important;
+}
+
+.fw-halal-field:focus {
+  border-color: rgba(201,152,60,0.4) !important;
+}
+
+.fw-halal-field::placeholder {
+  color: rgba(255,255,255,0.25) !important;
+}
+
+.fw-halal-check-btn {
+  height: 30px !important;
+  padding: 0 10px !important;
+  border-radius: 6px !important;
+  border: none !important;
+  background: #c9983c !important;
+  color: #08080a !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+}
+
+.fw-halal-check-btn:hover {
+  opacity: 0.9 !important;
+}
+
+.fw-halal-check-btn:disabled {
+  opacity: 0.5 !important;
+  cursor: default !important;
+}
+
+.fw-halal-result {
+  padding: 8px 10px !important;
+  border-radius: 6px !important;
+  font-size: 11px !important;
+  line-height: 1.5 !important;
+}
+
+.fw-halal-safe {
+  background: rgba(16,185,129,0.1) !important;
+  color: #10b981 !important;
+  border: 1px solid rgba(16,185,129,0.15) !important;
+}
+
+.fw-halal-caution {
+  background: rgba(245,158,11,0.1) !important;
+  color: #f59e0b !important;
+  border: 1px solid rgba(245,158,11,0.15) !important;
+}
+
+.fw-halal-warning {
+  background: rgba(239,68,68,0.1) !important;
+  color: #ef4444 !important;
+  border: 1px solid rgba(239,68,68,0.15) !important;
+}
+
+.fw-halal-blocked {
+  background: rgba(239,68,68,0.12) !important;
+  color: #ef4444 !important;
+  border: 1px solid rgba(239,68,68,0.2) !important;
+}
+
+.fw-halal-reason {
+  font-size: 10px !important;
+  opacity: 0.7 !important;
+  margin-top: 2px !important;
+}
+
+.fw-halal-brief {
+  margin-top: 7px !important;
+  padding: 7px 9px !important;
+  background: rgba(201,152,60,0.07) !important;
+  border: 1px solid rgba(201,152,60,0.2) !important;
+  border-radius: 5px !important;
+  font-size: 10px !important;
+  color: rgba(255,255,255,0.6) !important;
+  line-height: 1.55 !important;
+}
+
+.fw-halal-brief::before {
+  content: '🕌 Whisper Says: ';
+  font-weight: 600 !important;
+  color: #c9983c !important;
+}
+
+.fw-halal-quran {
+  margin-top: 5px !important;
+  font-size: 9.5px !important;
+  color: rgba(201,152,60,0.8) !important;
+  font-style: italic !important;
+}
+
+/* ── Wallet Widget ────────────────────────────────────────── */
+.fw-wallet-body {
+  text-align: center !important;
+  padding: 6px 0 !important;
+}
+
+.fw-wallet-amount {
+  font-size: 24px !important;
+  font-weight: 600 !important;
+  color: #c9983c !important;
+  line-height: 1.2 !important;
+}
+
+.fw-wallet-currency {
+  font-size: 11px !important;
+  color: rgba(255,255,255,0.35) !important;
+  margin-top: 2px !important;
+}
+
+.fw-wallet-addr {
+  font-family: 'JetBrains Mono', 'Menlo', monospace !important;
+  font-size: 9px !important;
+  color: rgba(255,255,255,0.2) !important;
+  margin-top: 5px !important;
+  word-break: break-all !important;
+}
+
+.fw-wallet-status {
+  font-size: 10px !important;
+  color: rgba(255,255,255,0.25) !important;
+  margin-top: 6px !important;
+  font-style: italic !important;
+}
+
+/* ── Zakat Calculator Widget ──────────────────────────────── */
+.fw-zakat-form {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+
+.fw-zakat-label {
+  font-size: 10.5px !important;
+  color: rgba(255,255,255,0.5) !important;
+}
+
+.fw-zakat-row {
+  display: flex !important;
+  gap: 6px !important;
+}
+
+.fw-zakat-field {
+  flex: 1 !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 6px !important;
+  color: rgba(255,255,255,0.85) !important;
+  font-size: 11px !important;
+  outline: none !important;
+}
+
+.fw-zakat-field:focus {
+  border-color: rgba(201,152,60,0.4) !important;
+}
+
+.fw-zakat-field::placeholder {
+  color: rgba(255,255,255,0.25) !important;
+}
+
+.fw-zakat-calc-btn {
+  height: 30px !important;
+  padding: 0 12px !important;
+  border-radius: 6px !important;
+  border: none !important;
+  background: #10b981 !important;
+  color: #fff !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+}
+
+.fw-zakat-calc-btn:hover {
+  opacity: 0.9 !important;
+}
+
+.fw-zakat-calc-btn:disabled {
+  opacity: 0.5 !important;
+  cursor: default !important;
+}
+
+.fw-zakat-result {
+  padding: 8px !important;
+  background: rgba(16,185,129,0.08) !important;
+  border: 1px solid rgba(16,185,129,0.15) !important;
+  border-radius: 6px !important;
+  text-align: center !important;
+}
+
+.fw-zakat-amount {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: #10b981 !important;
+}
+
+.fw-zakat-detail {
+  font-size: 10.5px !important;
+  color: rgba(255,255,255,0.4) !important;
+  margin-top: 3px !important;
+}
+
+.fw-zakat-nisab {
+  font-size: 10px !important;
+  color: rgba(255,255,255,0.25) !important;
+  margin-top: 4px !important;
+}
+
+/* ── Verse of the Day Widget ───────────────────────────────── */
+.fw-verse-body {
+  text-align: center !important;
+  padding: 4px 0 !important;
+}
+
+.fw-verse-arabic {
+  font-family: 'Noto Naskh Arabic', 'Traditional Arabic', serif !important;
+  font-size: 16px !important;
+  color: #c9983c !important;
+  direction: rtl !important;
+  text-align: center !important;
+  line-height: 1.8 !important;
+  margin-bottom: 6px !important;
+}
+
+.fw-verse-english {
+  font-size: 11px !important;
+  color: rgba(255,255,255,0.5) !important;
+  font-style: italic !important;
+  line-height: 1.5 !important;
+  margin-bottom: 3px !important;
+}
+
+.fw-verse-ref {
+  font-size: 9.5px !important;
+  color: rgba(201,152,60,0.7) !important;
+  font-weight: 500 !important;
+}
+
+/* ── Widget Toggle Button ──────────────────────────────────── */
+#falah-widget-toggle {
+  position: fixed !important;
+  z-index: 2147483645 !important;
+  bottom: 20px !important;
+  right: 20px !important;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 10px !important;
+  background: rgba(19,19,23,0.88) !important;
+  border: 1px solid rgba(201,152,60,0.2) !important;
+  color: #c9983c !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 18px !important;
+  transition: all 0.15s ease !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3) !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+}
+
+#falah-widget-toggle:hover {
+  background: rgba(201,152,60,0.15) !important;
+  border-color: rgba(201,152,60,0.4) !important;
+  transform: scale(1.05) !important;
+}
+
+/* ── Widget Config Panel ───────────────────────────────────── */
+.fw-config-panel {
+  position: fixed !important;
+  z-index: 2147483647 !important;
+  bottom: 64px !important;
+  right: 20px !important;
+  background: rgba(13,13,16,0.98) !important;
+  border: 1px solid rgba(201,152,60,0.18) !important;
+  border-radius: 10px !important;
+  padding: 12px !important;
+  min-width: 210px !important;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  display: none !important;
+}
+
+.fw-config-panel.fw-config-open {
+  display: block !important;
+  animation: fw-config-in 0.15s ease !important;
+}
+
+@keyframes fw-config-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fw-config-header {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: rgba(255,255,255,0.8) !important;
+  margin-bottom: 8px !important;
+  padding-bottom: 6px !important;
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.fw-config-close {
+  background: none !important;
+  border: none !important;
+  color: rgba(255,255,255,0.3) !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  padding: 0 2px !important;
+  line-height: 1 !important;
+}
+
+.fw-config-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 5px 4px !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  transition: background 0.1s !important;
+}
+
+.fw-config-item:hover {
+  background: rgba(255,255,255,0.04) !important;
+}
+
+.fw-config-icon {
+  font-size: 13px !important;
+  flex-shrink: 0 !important;
+  width: 20px !important;
+  text-align: center !important;
+}
+
+.fw-config-label {
+  flex: 1 !important;
+  font-size: 11px !important;
+  color: rgba(255,255,255,0.7) !important;
+}
+
+.fw-config-badge {
+  font-size: 8px !important;
+  padding: 2px 6px !important;
+  border-radius: 8px !important;
+  text-transform: uppercase !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em !important;
+}
+
+.fw-badge-sticky {
+  background: rgba(201,152,60,0.15) !important;
+  color: #c9983c !important;
+}
+
+.fw-badge-minimized {
+  background: rgba(255,255,255,0.06) !important;
+  color: rgba(255,255,255,0.4) !important;
+}
+
+.fw-badge-hidden {
+  background: rgba(239,68,68,0.1) !important;
+  color: #ef4444 !important;
+}
