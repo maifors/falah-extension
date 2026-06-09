@@ -1,81 +1,216 @@
-# Falah OS Browser ExtensionCE (v2.1.0)
+# Falah OS — Browser Extension v2.1.0
 
 > **Shariah-Compliant Browsing with Ummah ID, Wallet, iStore, Zakat, and AI-Driven Shariah Guidance.**
 
-Falah OS is a sovereign, Shariah-native browser extension designed to protect the digital well-being of the global Muslim community. By integrating real-time Shariah compliance auditing, zero-knowledge identity protocols, and elegant Islamic mindfulness widgets, Falah helps you maintain values-aligned habits while navigating the modern web.
+Falah OS is a sovereign, Shariah-native Chrome extension that protects the digital well-being of the global Muslim community. It integrates real-time Shariah compliance auditing, zero-knowledge identity protocols, and elegant Islamic mindfulness widgets into your browser.
 
 ---
 
 ## ✨ Key Features
 
-### 📡 Shariah-Native Whisper Engine
-The core safety system dynamically audits and grades every webpage in real time, assigning a colored compliance verdict:
-*   🟢 **Green (Safe):** Lawful (Halal) content. Free to browse.
-*   🟡 **Amber (Caution):** Content that may involve questionable items (e.g., interest-bearing financial options, gelatin/food ingredients).
-*   🔴 **Red (Warning / Blocked):** Immoral content, active gambling, or alcohol sales. Access is flagged or blocked according to your guidance level settings.
+### 📡 Whisper Engine — Real-Time Page Classification
+Every page you visit is audited against Shariah principles in real time:
+
+| Verdict | Colour | Meaning |
+|---------|--------|---------|
+| **Safe** | 🟢 Green | Halal content — free to browse |
+| **Caution** | 🟡 Amber | Potentially questionable content |
+| **Warning** | 🔴 Red | Islamically problematic content |
+| **Blocked** | 🚫 Red | Explicitly haram — access blocked in Strict mode |
+
+Classification uses a two-tier engine: **local regex rules** (offline-capable) backed by a **Netlify serverless API** for enhanced detection. Each result includes Quranic evidence, Hadith references, and plain-language explanations.
 
 ### 📖 Contextual Islamic Guidance
-Every grading is backed by authentic Islamic principles. The engine contextually selects the most relevant evidence from a curated bank of **Quranic verses** and **Hadiths** matching the site's profile (e.g., *Maysir* for gambling, *Khamr* for intoxicants, *Riba* for interest rates, or *Halal Food* requirements) along with plain-language, practical advice explaining **why** the grade was assigned.
+Every verdict is backed by authentic Islamic principles with context-matched **Quranic verses** and **Hadith** evidence (*Maysir* for gambling, *Khamr* for alcohol, *Riba* for interest, etc.).
 
-### 🖥️ Premium UI Side Panel & Widgets
-*   **Verdict Side Panel:** A premium, dark gold-themed side panel that renders Arabic verses with custom font rendering, English translations, and a dedicated **Whisper Says** block containing the guidance explanation.
-*   ** Halal Checker Widget:** An on-page floating interactive card that scans the DOM and lets you instantly analyze questionable links.
-*   **Evidence Subbar:** A minimal floating bar at the bottom of the page showing the active verdict and a summary of the Shariah guidance text.
+### 🖥️ Premium Side Panel & Widgets
+- **Verdict Side Panel** — Dark gold-themed panel with Arabic verses, English translation, and Whisper guidance
+- **Floating Widgets** — Draggable, stateful mini-apps for Prayer Times, Halal Checker, Wallet Balance, Zakat Calculator, and Verse of the Day
+- **Evidence Subbar** — Minimal floating bar showing active verdict and guidance text
 
----
+### 🏦 Ummah ID & Digital Finance
+- **Ummah ID** — Zero-knowledge identity with JWT auth
+- **Sovereign Wallet** — Create, view balance, track transactions in FLH
+- **Zakat Engine** — Calculate and pay Zakat with nisab threshold and Shariah evidence
+- **Halal iStore** — Browse curated Islamic apps with search and categories
 
-## 🛠️ Installation Instructions
-
-To install Falah Browser Extension locally in Developer Mode:
-
-1.  **Clone or Open the Folder:**
-    Locate the extension root directory:
-    `/browser/FalahWidget/falah-extension-v2`
-2.  **Open Chrome Extensions:**
-    Launch Google Chrome and navigate to: `chrome://extensions/`
-3.  **Enable Developer Mode:**
-    Toggle the **Developer mode** switch in the top-right corner to **ON**.
-4.  **Load Unpacked Extension:**
-    Click the **Load unpacked** button in the top-left corner.
-5.  **Select the Directory:**
-    Select the `/Users/wanjauhari24/Desktop/Projects/falah-os 2/browser/FalahWidget/falah-extension-v2` directory.
-6.  **Pin Extension:**
-    Click the extensions puzzle icon in your Chrome toolbar and pin **Falah OS**.
+### 🕌 Islamic Lifestyle
+- Automatic **prayer time notifications** (alAdhan API)
+- **Next Salah** countdown in popup and subbar
+- Daily **Quranic verse** rotation
+- **Guidance levels** — Advisory / Caution / Strict
 
 ---
 
-## 📁 Codebase Directory Structure
+## 🖼️ Screenshots
 
-```filepath
+| Popup | Side Panel | Widgets |
+|-------|-----------|---------|
+| Verdict, wallet mini, prayer next, daily verse | Dashboard, iStore, Wallet, Zakat, Config | Draggable prayer/widget system |
+
+---
+
+## 🛠️ Installation
+
+### From Chrome Web Store *(coming soon)*
+1. Visit the [Falah OS Chrome Web Store listing](https://chromewebstore.google.com)
+2. Click **Add to Chrome**
+
+### Developer Mode (local)
+```bash
+git clone https://github.com/maifors/falah-extension.git
+cd falah-extension
+```
+
+1. Open Chrome → `chrome://extensions/`
+2. Enable **Developer mode** (top-right toggle)
+3. Click **Load unpacked**
+4. Select the `falah-extension-v2/` directory
+5. Pin the extension from the toolbar puzzle icon
+
+---
+
+## 📁 Project Structure
+
+```
 falah-extension-v2/
-├── manifest.json            # Extension configuration (Manifest V3)
-├── _locales/                # Internationalization strings
-├── icons/                   # Extension icons (16, 32, 48, 128px)
+├── manifest.json              # Manifest V3 config
+├── README.md
+├── _locales/en/               # English i18n strings
+├── icons/                     # 16/32/48/128px icons
 └── src/
     ├── background/
-    │   ├── service-worker.js # Main background script, Whisper categorizer & alarms
-    │   └── api-client.js     # API connector for Falah netlify serverless functions
+    │   ├── service-worker.js  # Whisper engine, alarms, message router
+    │   ├── api-client.js      # Falah OS Netlify API client
+    │   └── mock-data.js       # Offline demo/sandbox data
     ├── content/
-    │   ├── content.js        # DOM page scraper, Halal Checker & Subbar injector
-    │   └── content.css       # Premium floating widget and subbar styling
+    │   ├── content.js         # Subbar, panel iframe, widget system injector
+    │   └── content.css        # Floating UI styles with !important isolation
     ├── panel/
-    │   ├── panel.html        # Verdict panel user interface
-    │   ├── panel.css         # Dark gold luxury layout styling
-    │   └── panel.js          # Live verdict updates listener and renderer
+    │   ├── panel.html         # Side panel UI (dashboard, wallet, store, zakat, config)
+    │   ├── panel.css          # Dark gold "Institutional Noir" design system
+    │   └── panel.js           # Panel logic: auth, wallet, store, zakat, settings
     └── popup/
-        ├── popup.html        # Extension quick status popup UI
-        └── popup.js          # Controls and options event handlers
+        ├── popup.html         # Quick-status popup (300px)
+        └── popup.js           # Verdict display, wallet mini, prayer next
 ```
 
 ---
 
-## 🧪 Quality Assurance & Testing
+## 🔐 Permissions Explained
 
-The extension includes a highly robust, isolated Node.js QA test suite that programmatically extracts and validates the service worker's classification engine and Shariah evidence selectors.
+| Permission | Why It's Needed |
+|-----------|-----------------|
+| `storage` | Persist settings, auth token, verdict cache, widget state |
+| `alarms` | Prayer time checks every 5 min |
+| `notifications` | Prayer time alerts |
+| `activeTab` | Access current tab URL for page classification |
+| `scripting` | Extract page text for classification |
+| `tabs` | Tab-level badge updates (verdict indicator) |
+| `sidePanel` | Chrome side panel API |
+| `<all_urls>` | Content script runs on every page for real-time auditing |
 
-To run the automated test suite locally:
+All classification runs **locally by default**. Page text is only sent to the Falah OS API when the local engine is inconclusive.
+
+---
+
+## 🧪 QA Testing
+
+The extension includes a formal Node.js QA test suite (110 tests):
+
 ```bash
-node "../../../../../.gemini/antigravity-cli/brain/ae628f8e-1371-473f-8061-82c4a69e61db/scratch/qa_test.js"
+node qa-test.js
 ```
 
-The test runner will validate **12 different strict test cases** (including Gambling, Riba, Alcohol, Haram Foods, Safe fallbacks, and selector routing integrity) and generate a markdown report file at `/qa_test_report.md`.
+**Test coverage:**
+| Area | Tests |
+|------|-------|
+| File integrity | 18 — all source files present and non-empty |
+| Manifest validation | 9 — MV3 structure, permissions, commands |
+| Security fixes | 7 — postMessage origin, FALAH_ERROR, origin validation |
+| Classification logic | 12 — 12 test cases across all verdict levels |
+| HTML structure | 14 — panel, popup, blocked page |
+| CSS integrity | 6 — content.css + panel.css |
+| Module chain | 4 — import/export correctness |
+| Version consistency | 2 — manifest vs. panel version |
+
+---
+
+## 🔒 Security
+
+- **CSP** enforced on extension pages: `script-src 'self'; object-src 'self'`
+- **Context isolation**: `contextIsolation: true`, `nodeIntegration: false` in Electron
+- **postMessage**: All cross-origin messages use explicit `targetOrigin` (extension origin)
+- **Origin validation**: Incoming messages verified via `MessageEvent.source` reference check
+- **Error propagation**: Service worker errors propagate to content script for user visibility
+- **Minimal permissions**: Only the permissions required for functionality are requested
+
+---
+
+## 🏗️ Architecture
+
+```
+Website Page
+    │
+    ├── Content Script (content.js)
+    │   ├── Subbar ── shows real-time verdict
+    │   ├── Panel iframe ── chrome-extension:// origin
+    │   │   └── panel.html/js/css
+    │   └── Widget system ── draggable floating widgets
+    │
+    └── Service Worker (service-worker.js)
+        ├── Chrome.runtime message router
+        ├── Whisper classification engine
+        ├── Prayer time alarms (5 min interval)
+        └── FalahApiClient
+            ├── Local rules (offline fallback)
+            └── Netlify serverless API → falah-os.com
+```
+
+---
+
+## 🗺️ Roadmap
+
+- [x] Whisper Engine (local + API)
+- [x] Side panel with Dashboard, Wallet, iStore, Zakat, Config
+- [x] Floating widget system (Prayer, Halal Checker, Wallet, Zakat, Verse)
+- [x] Ummah ID with demo mode
+- [x] Prayer times with notifications
+- [x] QA test suite (110 tests)
+- [ ] Chrome Web Store publication
+- [ ] Edge/Firefox compatibility
+- [ ] Encrypted bookmark sync
+- [ ] Multi-language support (beyond English)
+- [ ] Rule update via signed Falah Registry stream
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feat/amazing-feature`)
+3. Run the QA suite: `node qa-test.js`
+4. Commit your changes
+5. Open a Pull Request
+
+Please ensure all 110 QA tests pass before submitting.
+
+---
+
+## 📄 License
+
+MIT — see [LICENSE](LICENSE)
+
+---
+
+## 📞 Contact
+
+**WM Jauhari Ismail** — Principal Consultant, Falah Consultancy Limited
+
+Project Link: [https://github.com/maifors/falah-extension](https://github.com/maifors/falah-extension)
+
+---
+
+<p align="center">
+  Built with ❤️ and ☪️ for the Ummah
+</p>
