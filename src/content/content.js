@@ -60,6 +60,7 @@
   // ── Listen for verdict from service worker ────────────────────────────────
   chrome.runtime.onMessage.addListener((msg) => {
     if (msg.type === 'VERDICT_READY') applyVerdict(msg.verdict);
+    if (msg.type === 'FALAH_ERROR') showError(msg.error);
     if (msg.type === 'TOGGLE_PANEL')  togglePanel();
     if (msg.type === 'SETTINGS_UPDATED') {
       settings = msg.settings;
@@ -72,7 +73,7 @@
     currentVerdict = verdict;
     updateSubbar(verdict);
     if (panelIframe) {
-      panelIframe.contentWindow?.postMessage({ type: 'VERDICT', verdict }, '*');
+      panelIframe.contentWindow?.postMessage({ type: 'VERDICT', verdict }, chrome.runtime.getURL('/'));
     }
 
     const { guidanceLevel } = settings;
@@ -194,6 +195,8 @@
 
   function handlePanelMessage(e) {
     if (!e.data || e.data.source !== 'falah-panel') return;
+    // Only accept messages from our own extension's iframe
+    if (e.origin !== chrome.runtime.getURL('/').slice(0, -1)) return;
     switch (e.data.type) {
       case 'CLOSE_PANEL':    closePanel(); break;
       case 'SAVE_SETTINGS':  saveSettings(e.data.settings); break;
@@ -210,7 +213,7 @@
     document.documentElement.style.setProperty('--falah-panel-w', PANEL_WIDTH);
     panelOpen = true;
     if (currentVerdict && panelIframe) {
-      panelIframe.contentWindow?.postMessage({ type: 'VERDICT', verdict: currentVerdict }, '*');
+      panelIframe.contentWindow?.postMessage({ type: 'VERDICT', verdict: currentVerdict }, chrome.runtime.getURL('/'));
     }
   }
 
@@ -272,6 +275,17 @@
     // Styles are loaded via content.css — just set up CSS variables
     document.documentElement.style.setProperty('--falah-subbar-h', '0px');
     document.documentElement.style.setProperty('--falah-panel-w', '0px');
+  }
+
+  // ── Show error in subbar ──────────────────────────────────────
+  function showError(msg) {
+    const evEl = document.getElementById('fsb-evidence');
+    if (evEl) evEl.textContent = '⚠ ' + msg.substring(0, 80);
+    const pill = document.getElementById('fsb-verdict-pill');
+    if (pill) {
+      pill.className = 'fsb-verdict fsb-verdict-warning';
+      pill.querySelector('.fsb-verdict-text').textContent = 'Error';
+    }
   }
 
   // ── Init ──────────────────────────────────────────────────────────────────

@@ -9,6 +9,7 @@ let wallet = null;
 let transactions = null;
 let catalog = null;
 let clockTimer = null;
+const PARENT_ORIGIN = new URLSearchParams(location.search).get('origin') || '*';
 
 const GUIDANCE_DESCS = {
   advisory: 'Falah observes and informs. Navigation is never interrupted.',
@@ -215,9 +216,8 @@ function switchTab(name) {
 }
 
 function setupClose() {
-  $('btn-close')?.addEventListener('click', async () => {
-    try { await chrome.runtime.sendMessage({ type: 'OPEN_SIDE_PANEL' }); } catch (_) {}
-    window.parent.postMessage({ source: 'falah-panel', type: 'CLOSE_PANEL' }, '*');
+  $('btn-close')?.addEventListener('click', () => {
+    window.parent.postMessage({ source: 'falah-panel', type: 'CLOSE_PANEL' }, PARENT_ORIGIN);
   });
 }
 
@@ -602,6 +602,7 @@ function checkApiHealth() {
 
 window.addEventListener('message', (e) => {
   if (!e.data) return;
+  // Only accept messages from the content script (web page origin)
   if (e.data.type === 'VERDICT') {
     const verdict = e.data.verdict;
     const card = $('verdict-card');
@@ -619,6 +620,7 @@ window.addEventListener('message', (e) => {
       const desc = $('vc-desc');
       if (desc) desc.textContent = verdict.reason || '';
     }
+
     const quran = verdict.quran;
     if (quran) {
       const ar = $('ev-arabic');
@@ -627,7 +629,17 @@ window.addEventListener('message', (e) => {
       if (q) q.textContent = `"${quran.english}"`;
       const r = $('ev-ref');
       if (r) r.textContent = quran.ref || '';
+
+      // ── Whisper Guidance: brief explanation of WHY this grade was given ──
+      const briefEl = $('ev-brief-explanation');
+      if (briefEl && quran.briefExplanation) {
+        briefEl.textContent = quran.briefExplanation;
+        briefEl.style.display = '';
+      } else if (briefEl) {
+        briefEl.style.display = 'none';
+      }
     }
+
     const alts = $('alts-list');
     if (alts && verdict.alternatives?.length) {
       alts.innerHTML = verdict.alternatives.map(a => `

@@ -3,7 +3,7 @@
   "name": "Falah OS",
   "short_name": "Falah",
   "description": "Falah OS — Shariah-compliant browsing with Ummah ID, Wallet, iStore, Zakat, and AI guidance.",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "default_locale": "en",
 
   "icons": {
@@ -70,7 +70,7 @@
 
   "host_permissions": [
     "<all_urls>",
-    "https://app-814845252352.us-central1.run.app/*",
+    "https://falah-os.com/*",
     "http://localhost:3000/*",
     "http://localhost:8000/*"
   ],

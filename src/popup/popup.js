@@ -119,7 +119,9 @@ async function loadPrayerTimes() {
     }
   }
   const n = $('pb-name');
-  if (n) n.textContent = `Fajr (tomorrow) ${(pt.Fajr || '').substring(0, 5)}`;
+  const ti = $('pb-time');
+  if (n) n.textContent = 'Fajr (tomorrow)';
+  if (ti) ti.textContent = (pt.Fajr || '—').substring(0, 5);
 }
 
 function setupButtons() {
@@ -133,8 +135,15 @@ function setupButtons() {
   $('btn-istore')?.addEventListener('click', openPanel);
   $('btn-wallet')?.addEventListener('click', openPanel);
   $('btn-settings')?.addEventListener('click', openPanel);
+  $('btn-widgets')?.addEventListener('click', async () => {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab) {
+      chrome.tabs.sendMessage(tab.id, { type: 'TOGGLE_WIDGETS' }).catch(() => {});
+    }
+    window.close();
+  });
   $('btn-open-falah')?.addEventListener('click', () => {
-    chrome.tabs.create({ url: 'https://falah-os.com' });
+    chrome.tabs.create({ url: 'https://falah-os.netlify.app' });
     window.close();
   });
   $('btn-reload')?.addEventListener('click', async () => {
