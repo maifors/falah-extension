@@ -751,23 +751,26 @@ function setupNurBuddy() {
     scrollToBottom();
 
     try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-user-id': TEST_USER_ID },
-        body: JSON.stringify({ query: text })
-      });
-      const data = await res.json();
-      const responseText = res.ok ? data.response : `[Error] ${data.error || 'Access Denied'}`;
+      const res = await msgBg({ type: 'FALAH_NURBUDDY_CHAT', query: text });
       
       const loadingEl = $(loadingId);
       if (loadingEl) loadingEl.remove();
 
-      nbChatArea.innerHTML += `
-        <div class="nb-msg nb-msg-ai">
-          <div class="nb-msg-icon">🤖</div>
-          <div class="nb-msg-bubble">${escHtml(responseText)}</div>
-        </div>
-      `;
+      if (res?.ok && res.data) {
+        nbChatArea.innerHTML += `
+          <div class="nb-msg nb-msg-ai">
+            <div class="nb-msg-icon">🤖</div>
+            <div class="nb-msg-bubble">${escHtml(res.data.response)}</div>
+          </div>
+        `;
+      } else {
+        nbChatArea.innerHTML += `
+          <div class="nb-msg nb-msg-ai">
+            <div class="nb-msg-icon">⚠️</div>
+            <div class="nb-msg-bubble" style="color:var(--ruby)">${escHtml(res?.error || 'Failed to get response.')}</div>
+          </div>
+        `;
+      }
     } catch (e) {
       const loadingEl = $(loadingId);
       if (loadingEl) loadingEl.remove();
@@ -775,7 +778,7 @@ function setupNurBuddy() {
       nbChatArea.innerHTML += `
         <div class="nb-msg nb-msg-ai">
           <div class="nb-msg-icon">⚠️</div>
-          <div class="nb-msg-bubble" style="color:var(--ruby)">Network error. Is the Falah OS engine running locally?</div>
+          <div class="nb-msg-bubble" style="color:var(--ruby)">Panel messaging error.</div>
         </div>
       `;
     }

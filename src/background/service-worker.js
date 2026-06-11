@@ -241,6 +241,26 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           sendResponse({ ok: true, data: monitorStats || { safe: 0, caution: 0, warning: 0, blocked: 0, history: [] } });
           break;
         }
+        case 'FALAH_NURBUDDY_CHAT': {
+          try {
+            const resp = await fetch('http://localhost:3000/api/v1/mobile/chat', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'x-user-id': msg.userId || 'cmpxlwxe7000012i02oegq55w' },
+              body: JSON.stringify({ query: msg.query }),
+              signal: AbortSignal.timeout(15000)
+            });
+            const data = await resp.json();
+            if (resp.ok) {
+              sendResponse({ ok: true, data });
+            } else {
+              sendResponse({ ok: false, error: data.error || `HTTP ${resp.status}` });
+            }
+          } catch (e) {
+            console.error('[Falah] NurBuddy API Error:', e.message);
+            sendResponse({ ok: false, error: 'Network error. Is the local Falah OS engine running?' });
+          }
+          break;
+        }
         case 'OPEN_SIDE_PANEL': {
           try {
             await chrome.sidePanel.open({ windowId: sender.tab?.windowId || msg.windowId });
