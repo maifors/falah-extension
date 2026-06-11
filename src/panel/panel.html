@@ -43,6 +43,14 @@
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
       Zakat
     </button>
+    <button class="p-tab" data-tab="nurbuddy">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      NurBuddy
+    </button>
+    <button class="p-tab" data-tab="monitor">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>
+      Monitor
+    </button>
     <button class="p-tab" data-tab="settings">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83"/></svg>
       Config
@@ -239,6 +247,77 @@
         <div class="ev-arabic">خُذْ مِنْ أَمْوَالِهِمْ صَدَقَةً تُطَهِّرُهُمْ وَتُزَكِّيهِم بِهَا</div>
         <div class="ev-quote">"Take from their wealth a charity to purify and sanctify them."</div>
         <div class="ev-ref">Quran 9:103</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="p-tab-content" id="tab-nurbuddy">
+    <div class="nb-chat-container">
+      <div class="nb-chat-area" id="nb-chat-area">
+        <div class="nb-msg nb-msg-ai">
+          <div class="nb-msg-icon">🤖</div>
+          <div class="nb-msg-bubble">Assalamu alaikum! I am NurBuddy, your sovereign Islamic AI companion. How can I assist you with your browsing or Islamic knowledge today?</div>
+        </div>
+      </div>
+      <div class="nb-input-area">
+        <input type="text" id="nb-input" class="nb-input" placeholder="Ask a question..." autocomplete="off">
+        <button class="nb-send-btn" id="nb-send-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="p-tab-content" id="tab-monitor">
+    <div class="p-section">
+      <div class="p-section-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="vertical-align:middle;margin-right:4px"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>
+        Halal Monitor Dashboard
+      </div>
+      <div class="monitor-card">
+        <div class="mc-title">Weekly Browsing Adherence</div>
+        <div class="mc-score" id="mc-score">92%</div>
+        <div class="mc-subtitle">Safe & Halal Content</div>
+      </div>
+    </div>
+
+    <div class="p-section">
+      <div class="p-section-title">Activity Breakdown</div>
+      <div class="monitor-stats-grid">
+        <div class="ms-box ms-safe">
+          <div class="ms-val">1,240</div>
+          <div class="ms-lbl">Safe Pages</div>
+        </div>
+        <div class="ms-box ms-caution">
+          <div class="ms-val">45</div>
+          <div class="ms-lbl">Caution</div>
+        </div>
+        <div class="ms-box ms-blocked">
+          <div class="ms-val">3</div>
+          <div class="ms-lbl">Blocked</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-section">
+      <div class="p-section-title">Recent Flagged Activity</div>
+      <div id="hm-recent-list">
+        <div class="tx-row tx-out">
+          <div class="tx-icon" style="background:var(--ruby-dim);color:var(--ruby)">✕</div>
+          <div class="tx-info">
+            <div class="tx-type">Gambling Domain Blocked</div>
+            <div class="tx-date">Today, 2:15 PM</div>
+          </div>
+          <div class="tx-amount" style="color:var(--text-3);font-size:10px">Auto-blocked</div>
+        </div>
+        <div class="tx-row tx-out">
+          <div class="tx-icon" style="background:var(--amber-dim);color:var(--amber)">!</div>
+          <div class="tx-info">
+            <div class="tx-type">Financial Article (Riba detected)</div>
+            <div class="tx-date">Yesterday, 11:30 AM</div>
+          </div>
+          <div class="tx-amount" style="color:var(--text-3);font-size:10px">Caution given</div>
+        </div>
       </div>
     </div>
   </div>

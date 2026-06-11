@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono&display=swap');
+    
+    body { 
+      font-family: 'DM Sans', sans-serif; 
+      margin: 0; padding: 0; 
+      background: #070A0D; 
+      color: #E8E4DC;
+    }
+    .container { 
+      width: 360px; height: 520px; 
+      display: flex; flex-direction: column;
+      border: 1px solid rgba(201,168,76,0.2);
+      background: #0C1117;
+    }
+    .header { 
+      background: rgba(7,10,13,0.9); 
+      padding: 15px; 
+      border-bottom: 1px solid rgba(201,168,76,0.2);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .header h2 { margin: 0; font-family: 'Cinzel', serif; font-size: 16px; color: #E8E4DC; letter-spacing: 1px; }
+    .header p { margin: 2px 0 0 0; font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #2ECC71; letter-spacing: 2px; text-transform: uppercase; }
+    .status-dot { width: 6px; height: 6px; background: #00FF88; border-radius: 50%; box-shadow: 0 0 8px #00FF88; }
+    
+    .chat { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; background: #070A0D; }
+    .msg { padding: 12px 16px; border-radius: 8px; max-width: 85%; font-size: 14px; font-weight: 300; line-height: 1.5; }
+    .msg.ai { background: #141C24; border: 1px solid rgba(201,168,76,0.15); align-self: flex-start; border-top-left-radius: 0; }
+    .msg.user { background: linear-gradient(135deg, #C9A84C, #E8C97A); color: #070A0D; font-weight: 500; align-self: flex-end; border-top-right-radius: 0; }
+    
+    .input-area { padding: 15px; background: #0C1117; border-top: 1px solid rgba(201,168,76,0.2); display: flex; gap: 10px; }
+    input { 
+      flex: 1; padding: 12px 15px; 
+      background: #141C24; color: #E8E4DC;
+      border: 1px solid rgba(232,228,220,0.2); border-radius: 2px; 
+      outline: none; font-family: 'DM Sans'; font-size: 13px;
+    }
+    input:focus { border-color: #C9A84C; }
+    button { 
+      background: transparent; color: #C9A84C; 
+      border: 1px solid #C9A84C; padding: 0 20px; border-radius: 2px; 
+      cursor: pointer; font-family: 'JetBrains Mono'; font-size: 10px; text-transform: uppercase; letter-spacing: 2px;
+      transition: all 0.2s;
+    }
+    button:hover { background: #C9A84C; color: #070A0D; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h2>NUR BUDDY</h2>
+        <p>Knowledge Engine</p>
+      </div>
+      <div class="status-dot"></div>
+    </div>
+    <div class="chat" id="chat">
+      <div class="msg ai">Assalamu alaikum. I am Nur Buddy, your Sovereign AI Companion.</div>
+    </div>
+    <div class="input-area">
+      <input type="text" id="input" placeholder="Seek knowledge..." autocomplete="off" />
+      <button onclick="send()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const TEST_USER_ID = "cmpxlwxe7000012i02oegq55w";
+    const API_URL = "http://localhost:3000/api/v1/mobile/chat";
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('input');
+
+    async function send() {
+      const text = input.value.trim();
+      if (!text) return;
+
+      chat.innerHTML += `<div class="msg user">${text}</div>`;
+      input.value = '';
+      chat.scrollTop = chat.scrollHeight;
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-user-id': TEST_USER_ID },
+          body: JSON.stringify({ query: text })
+        });
+        const data = await res.json();
+        const responseText = res.ok ? data.response : `[Error] ${data.error || 'Access Denied'}`;
+        
+        chat.innerHTML += `<div class="msg ai">${responseText}</div>`;
+      } catch (e) {
+        chat.innerHTML += `<div class="msg ai">Network error. Is the Falah OS engine running?</div>`;
+      }
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    input.addEventListener('keypress', (e) => { if (e.key === 'Enter') send(); });
+  </script>
+</body>
+</html>

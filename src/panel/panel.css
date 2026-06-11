@@ -728,3 +728,93 @@ body {
   margin-bottom: 6px;
 }
 .zr-detail { font-size: 11px; color: var(--text-2); line-height: 1.6; }
+
+/* ── NurBuddy AI Chat ───────────────────────────────────────── */
+.nb-chat-container {
+  display: flex; flex-direction: column; height: 100%;
+}
+.nb-chat-area {
+  flex: 1; padding: 14px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.nb-msg {
+  display: flex; gap: 10px; align-items: flex-end; max-width: 90%;
+}
+.nb-msg-ai {
+  align-self: flex-start;
+}
+.nb-msg-user {
+  align-self: flex-end; flex-direction: row-reverse;
+}
+.nb-msg-icon {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--bg-raised); border: 1px solid var(--border-m);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; flex-shrink: 0;
+}
+.nb-msg-user .nb-msg-icon {
+  background: var(--gold-dim); border-color: var(--gold-border); color: var(--gold);
+}
+.nb-msg-bubble {
+  background: var(--bg-card); border: 1px solid var(--border-s);
+  padding: 10px 14px; border-radius: 12px; font-size: 12px;
+  color: var(--text-1); line-height: 1.5;
+}
+.nb-msg-ai .nb-msg-bubble {
+  border-bottom-left-radius: 2px;
+}
+.nb-msg-user .nb-msg-bubble {
+  background: rgba(201,152,60,0.08); border-color: var(--gold-border);
+  color: var(--gold-light); border-bottom-right-radius: 2px;
+}
+
+.nb-input-area {
+  padding: 12px 14px; border-top: 1px solid var(--border-s);
+  background: var(--bg-surface); display: flex; gap: 8px;
+  position: sticky; bottom: 0;
+}
+.nb-input {
+  flex: 1; height: 38px; padding: 0 14px;
+  background: var(--bg-card); border: 1px solid var(--border-m);
+  border-radius: 19px; color: var(--text-1); font-size: 13px;
+  font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.15s;
+}
+.nb-input:focus { border-color: var(--gold-border); }
+.nb-input::placeholder { color: var(--text-3); }
+
+.nb-send-btn {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--gold); border: none; color: #08080a;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: transform 0.15s, opacity 0.15s;
+}
+.nb-send-btn:hover { opacity: 0.9; transform: scale(1.05); }
+
+/* ── Halal Monitor Dashboard ────────────────────────────────── */
+.monitor-card {
+  background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(16,185,129,0.02));
+  border: 1px solid rgba(16,185,129,0.2); border-radius: 10px;
+  padding: 16px; text-align: center; margin-bottom: 8px;
+}
+.mc-title { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+.mc-score {
+  font-family: 'Cormorant Garamond', serif; font-size: 38px;
+  font-weight: 300; color: var(--jade); line-height: 1; margin-bottom: 4px;
+}
+.mc-subtitle { font-size: 11px; color: var(--jade); opacity: 0.8; }
+
+.monitor-stats-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;
+}
+.ms-box {
+  background: var(--bg-card); border: 1px solid var(--border-s);
+  border-radius: 7px; padding: 10px 6px; text-align: center;
+}
+.ms-safe { border-color: rgba(16,185,129,0.2); background: rgba(16,185,129,0.05); }
+.ms-caution { border-color: rgba(245,158,11,0.2); background: rgba(245,158,11,0.05); }
+.ms-blocked { border-color: rgba(239,68,68,0.2); background: rgba(239,68,68,0.05); }
+.ms-val { font-size: 16px; font-weight: 500; display: block; line-height: 1.2; margin-bottom: 2px; }
+.ms-safe .ms-val { color: var(--jade); }
+.ms-caution .ms-val { color: var(--amber); }
+.ms-blocked .ms-val { color: var(--ruby); }
+.ms-lbl { font-size: 9px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; }

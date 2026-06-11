@@ -34,6 +34,9 @@ Every verdict is backed by authentic Islamic principles with context-matched **Q
 - **Zakat Engine** — Calculate and pay Zakat with nisab threshold and Shariah evidence
 - **Halal iStore** — Browse curated Islamic apps with search and categories
 
+### 🤖 NurBuddy AI & Halal Monitor (Premium)
+- **NurBuddy AI Companion** — Chat directly with your sovereign Islamic AI companion natively within the side panel. Ask questions on browsing or Islamic knowledge.
+- **Halal Monitor Dashboard** — Track your weekly Halal Adherence Score with dynamic visualization. View your complete browsing history broken down by Safe, Caution, and Blocked activity.
 ### 🕌 Islamic Lifestyle
 - Automatic **prayer time notifications** (alAdhan API)
 - **Next Salah** countdown in popup and subbar
@@ -56,17 +59,23 @@ Every verdict is backed by authentic Islamic principles with context-matched **Q
 1. Visit the [Falah OS Chrome Web Store listing](https://chromewebstore.google.com)
 2. Click **Add to Chrome**
 
-### Developer Mode (local)
-```bash
-git clone https://github.com/maifors/falah-extension.git
-cd falah-extension
-```
+### 📥 Download & Manual Installation
+For developers and early adopters, you can load the extension directly:
 
-1. Open Chrome → `chrome://extensions/`
-2. Enable **Developer mode** (top-right toggle)
-3. Click **Load unpacked**
-4. Select the `falah-extension-v2/` directory
-5. Pin the extension from the toolbar puzzle icon
+1. **Download the code**  
+   Clone the repository or download the ZIP from GitHub:
+   ```bash
+   git clone https://github.com/maifors/falah-extension.git
+   cd falah-extension
+   ```
+2. **Open Extensions Page**  
+   Open Google Chrome and navigate to `chrome://extensions/` in your address bar.
+3. **Enable Developer Mode**  
+   Toggle the **Developer mode** switch in the top-right corner.
+4. **Load the Extension**  
+   Click the **Load unpacked** button. Select the `falah-extension-v2/` directory from the folder you downloaded.
+5. **Pin it**  
+   Click the puzzle piece icon in the Chrome toolbar and click the pin icon next to Falah OS.
 
 ---
 
@@ -177,6 +186,8 @@ Website Page
 - [x] Ummah ID with demo mode
 - [x] Prayer times with notifications
 - [x] QA test suite (110 tests)
+- [x] NurBuddy AI Chat Integration
+- [x] Halal Monitor Dashboard with Adherence Scoring
 - [ ] Chrome Web Store publication
 - [ ] Edge/Firefox compatibility
 - [ ] Encrypted bookmark sync

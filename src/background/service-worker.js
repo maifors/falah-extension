@@ -236,6 +236,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           sendResponse({ ok: true, data: history || [] });
           break;
         }
+        case 'FALAH_GET_MONITOR_STATS': {
+          const { monitorStats } = await chrome.storage.local.get('monitorStats');
+          sendResponse({ ok: true, data: monitorStats || { safe: 0, caution: 0, warning: 0, blocked: 0, history: [] } });
+          break;
+        }
         case 'OPEN_SIDE_PANEL': {
           try {
             await chrome.sidePanel.open({ windowId: sender.tab?.windowId || msg.windowId });
@@ -302,7 +307,19 @@ async function classifyUrl(url, text) {
     const oldest = keys.sort((a, b) => cache[a].ts - cache[b].ts).slice(0, 50);
     oldest.forEach(k => delete cache[k]);
   }
-  await chrome.storage.local.set({ verdictCache: cache });
+  
+  // Track stats for Halal Monitor
+  const { monitorStats } = await chrome.storage.local.get('monitorStats');
+  const stats = monitorStats || { safe: 0, caution: 0, warning: 0, blocked: 0, history: [] };
+  stats[result.verdict] = (stats[result.verdict] || 0) + 1;
+  
+  // Track flagged history
+  if (result.verdict !== 'safe') {
+    stats.history.unshift({ url, title: result.reason || 'Flagged Content', verdict: result.verdict, ts: Date.now() });
+    if (stats.history.length > 50) stats.history.pop();
+  }
+  
+  await chrome.storage.local.set({ verdictCache: cache, monitorStats: stats });
   return result;
 }
 

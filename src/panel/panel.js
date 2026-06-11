@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupStore();
   setupZakat();
   setupQuickActions();
+  setupNurBuddy();
   checkNetworkStatus();
 });
 
@@ -212,6 +213,7 @@ function switchTab(name) {
   document.querySelectorAll('.p-tab-content').forEach(c => c.classList.toggle('active', c.id === `tab-${name}`));
   if (name === 'store') loadCatalog();
   if (name === 'wallet') { if (user) loadWallet(); }
+  if (name === 'monitor') loadMonitorStats();
   if (name === 'settings') checkApiHealth();
 }
 
@@ -656,3 +658,136 @@ window.addEventListener('message', (e) => {
     }
   }
 });
+
+async function loadMonitorStats() {
+  const res = await msgBg({ type: 'FALAH_GET_MONITOR_STATS' });
+  if (!res?.ok || !res.data) return;
+  const stats = res.data;
+
+  // Render stats
+  const safeEl = document.querySelector('.ms-safe .ms-val');
+  const cautionEl = document.querySelector('.ms-caution .ms-val');
+  const blockedEl = document.querySelector('.ms-blocked .ms-val');
+  
+  if (safeEl) safeEl.textContent = (stats.safe || 0).toLocaleString();
+  if (cautionEl) cautionEl.textContent = (stats.caution || 0).toLocaleString();
+  if (blockedEl) blockedEl.textContent = ((stats.blocked || 0) + (stats.warning || 0)).toLocaleString();
+
+  // Calculate adherence score
+  const total = (stats.safe || 0) + (stats.caution || 0) + (stats.warning || 0) + (stats.blocked || 0);
+  const scoreEl = $('mc-score');
+  if (scoreEl) {
+    if (total === 0) {
+      scoreEl.textContent = '100%';
+    } else {
+      const score = Math.round(((stats.safe || 0) / total) * 100);
+      scoreEl.textContent = score + '%';
+      
+      // Change color based on score
+      if (score < 70) scoreEl.style.color = 'var(--ruby)';
+      else if (score < 90) scoreEl.style.color = 'var(--amber)';
+      else scoreEl.style.color = 'var(--jade)';
+    }
+  }
+
+  // Render history
+  const historyList = $('hm-recent-list');
+  if (historyList) {
+    if (!stats.history || stats.history.length === 0) {
+      historyList.innerHTML = '<div class="tx-empty">No flagged activity found. Alhamdullilah!</div>';
+    } else {
+      historyList.innerHTML = stats.history.slice(0, 10).map(item => {
+        const isBlocked = item.verdict === 'blocked' || item.verdict === 'warning';
+        const colorVar = isBlocked ? '--ruby' : '--amber';
+        const icon = isBlocked ? '✕' : '!';
+        const date = new Date(item.ts).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+        
+        return `
+          <div class="tx-row tx-out" title="${escHtml(item.url)}">
+            <div class="tx-icon" style="background:var(${colorVar}-dim);color:var(${colorVar})">${icon}</div>
+            <div class="tx-info">
+              <div class="tx-type">${escHtml(item.title)}</div>
+              <div class="tx-date">${date}</div>
+            </div>
+            <div class="tx-amount" style="color:var(--text-3);font-size:10px">${isBlocked ? 'Auto-blocked' : 'Caution given'}</div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+}
+
+function setupNurBuddy() {
+  const nbInput = $('nb-input');
+  const nbSendBtn = $('nb-send-btn');
+  const nbChatArea = $('nb-chat-area');
+
+  if (!nbInput || !nbSendBtn || !nbChatArea) return;
+
+  const TEST_USER_ID = "cmpxlwxe7000012i02oegq55w";
+  const API_URL = "http://localhost:3000/api/v1/mobile/chat";
+
+  async function sendMsg() {
+    const text = nbInput.value.trim();
+    if (!text) return;
+
+    nbChatArea.innerHTML += `
+      <div class="nb-msg nb-msg-user">
+        <div class="nb-msg-icon">👤</div>
+        <div class="nb-msg-bubble">${escHtml(text)}</div>
+      </div>
+    `;
+    nbInput.value = '';
+    scrollToBottom();
+
+    // Show loading indicator
+    const loadingId = 'nb-loading-' + Date.now();
+    nbChatArea.innerHTML += `
+      <div class="nb-msg nb-msg-ai" id="${loadingId}">
+        <div class="nb-msg-icon">🤖</div>
+        <div class="nb-msg-bubble" style="opacity:0.6">Thinking...</div>
+      </div>
+    `;
+    scrollToBottom();
+
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-user-id': TEST_USER_ID },
+        body: JSON.stringify({ query: text })
+      });
+      const data = await res.json();
+      const responseText = res.ok ? data.response : `[Error] ${data.error || 'Access Denied'}`;
+      
+      const loadingEl = $(loadingId);
+      if (loadingEl) loadingEl.remove();
+
+      nbChatArea.innerHTML += `
+        <div class="nb-msg nb-msg-ai">
+          <div class="nb-msg-icon">🤖</div>
+          <div class="nb-msg-bubble">${escHtml(responseText)}</div>
+        </div>
+      `;
+    } catch (e) {
+      const loadingEl = $(loadingId);
+      if (loadingEl) loadingEl.remove();
+      
+      nbChatArea.innerHTML += `
+        <div class="nb-msg nb-msg-ai">
+          <div class="nb-msg-icon">⚠️</div>
+          <div class="nb-msg-bubble" style="color:var(--ruby)">Network error. Is the Falah OS engine running locally?</div>
+        </div>
+      `;
+    }
+    scrollToBottom();
+  }
+
+  function scrollToBottom() {
+    nbChatArea.scrollTop = nbChatArea.scrollHeight;
+  }
+
+  nbSendBtn.addEventListener('click', sendMsg);
+  nbInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') sendMsg();
+  });
+}
