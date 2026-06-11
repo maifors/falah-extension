@@ -243,7 +243,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         }
         case 'FALAH_NURBUDDY_CHAT': {
           try {
-            const resp = await fetch('http://localhost:3000/api/v1/mobile/chat', {
+            const resp = await fetch('http://13.140.161.244:3000/api/v1/mobile/chat', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'x-user-id': msg.userId || 'cmpxlwxe7000012i02oegq55w' },
               body: JSON.stringify({ query: msg.query }),
