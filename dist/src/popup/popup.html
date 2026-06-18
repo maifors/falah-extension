@@ -111,202 +111,6 @@ body {
   font-family: 'DM Sans', sans-serif; transition: color 0.15s;
 }
 .pf-btn:hover { color: var(--gold); }
-/* ── Error Banner ──────────────────────────────────── */
-.error-banner {
-  background: rgba(180,83,9,0.18);
-  border: 1px solid rgba(180,83,9,0.28);
-  border-radius: 8px;
-  padding: 10px 14px;
-  margin: 6px 14px;
-  display: none;
-  flex-direction: column;
-  gap: 8px;
-  animation: fadeIn 0.2s ease;
-}
-.error-banner.visible {
-  display: flex;
-}
-.error-banner-icon {
-  font-size: 14px;
-  margin-right: 6px;
-}
-.error-banner-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11.5px;
-  font-weight: 500;
-  color: #fcd34d;
-}
-.error-banner-msg {
-  font-size: 10.5px;
-  color: #fde68a;
-  line-height: 1.5;
-}
-.error-banner-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 2px;
-}
-.eb-btn {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10.5px;
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid rgba(251,191,36,0.25);
-  background: rgba(251,191,36,0.12);
-  color: #fbbf24;
-  cursor: pointer;
-  transition: all 0.12s;
-}
-.eb-btn:hover {
-  background: rgba(251,191,36,0.2);
-  border-color: rgba(251,191,36,0.4);
-}
-.eb-link {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
-  color: #a78bfa;
-  background: none;
-  border: none;
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  padding: 2px 4px;
-  transition: color 0.1s;
-}
-.eb-link:hover { color: #c4b5fd; }
-/* ── Feedback Form ────────────────────────────────── */
-.feedback-form {
-  display: none;
-  flex-direction: column;
-  gap: 6px;
-  margin: 0 14px 6px;
-  padding: 10px 14px;
-  background: rgba(180,83,9,0.12);
-  border: 1px solid rgba(180,83,9,0.2);
-  border-radius: 8px;
-}
-.feedback-form.visible {
-  display: flex;
-}
-.ff-label {
-  font-size: 10px;
-  color: #fde68a;
-  font-weight: 500;
-}
-.ff-textarea {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10.5px;
-  background: rgba(0,0,0,0.3);
-  border: 1px solid rgba(251,191,36,0.2);
-  border-radius: 6px;
-  padding: 6px 8px;
-  color: #fef3c7;
-  resize: vertical;
-  min-height: 44px;
-  outline: none;
-  transition: border-color 0.12s;
-}
-.ff-textarea:focus { border-color: #f59e0b; }
-.ff-textarea::placeholder { color: #92400e; }
-.ff-actions {
-  display: flex;
-  gap: 6px;
-  justify-content: flex-end;
-}
-.ff-btn {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10.5px;
-  padding: 4px 12px;
-  border-radius: 6px;
-  border: 1px solid rgba(251,191,36,0.25);
-  cursor: pointer;
-  transition: all 0.12s;
-}
-.ff-submit {
-  background: #d97706;
-  color: #1c1917;
-  font-weight: 500;
-  border-color: #f59e0b;
-}
-.ff-submit:hover { background: #b45309; }
-.ff-submit:disabled { opacity: 0.5; cursor: default; }
-.ff-cancel {
-  background: transparent;
-  color: #a1a1aa;
-  border-color: rgba(255,255,255,0.12);
-}
-.ff-cancel:hover { background: rgba(255,255,255,0.08); }
-.ff-status {
-  font-size: 10px;
-  color: #6ee7b7;
-  text-align: center;
-}
-@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
-/* ── Dhikr Counter ────────────────────────────────── */
-.dhikr-section {
-  border-bottom: 1px solid var(--bm);
-  padding: 8px 16px;
-}
-.dhikr-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 6px;
-}
-.dh-label {
-  font-size: 10px; color: var(--b3); text-transform: uppercase;
-  letter-spacing: 0.06em; font-weight: 500;
-}
-.dh-total {
-  font-size: 11px; color: var(--gold);
-  font-weight: 500;
-}
-.dh-total strong { font-size: 14px; }
-.dh-btns {
-  display: flex; gap: 5px; margin-bottom: 5px;
-}
-.dh-btn {
-  flex: 1; background: var(--bg-c); border: 1px solid var(--bm);
-  border-radius: 6px; padding: 5px 4px; cursor: pointer;
-  font-family: 'DM Sans', sans-serif; font-size: 10px; color: var(--b2);
-  text-align: center; transition: all 0.12s; line-height: 1.3;
-}
-.dh-btn:hover { border-color: var(--gold-border); background: var(--gold-dim); color: var(--gold); }
-.dh-btn:active { transform: scale(0.95); }
-.dh-btn .dh-ar { display: block; font-size: 11px; color: var(--gold); font-weight: 500; }
-.dh-btn .dh-en { display: block; font-size: 9px; color: var(--b3); }
-.dh-save-row {
-  display: flex; align-items: center; gap: 8px;
-}
-.dh-local {
-  font-size: 10px; color: var(--b2);
-}
-.dh-local strong { color: var(--gold); }
-.dh-save-btn {
-  margin-left: auto;
-  background: var(--gold-dim); border: 1px solid var(--gold-border);
-  border-radius: 6px; padding: 3px 10px; cursor: pointer;
-  font-family: 'DM Sans', sans-serif; font-size: 10px; color: var(--gold);
-  font-weight: 500; transition: all 0.12s;
-}
-.dh-save-btn:hover { background: rgba(201,152,60,0.22); }
-.dh-save-btn:disabled { opacity: 0.4; cursor: default; }
-/* ── Qibla Direction ──────────────────────────────── */
-.qibla-section {
-  display: flex; align-items: center; gap: 8px;
-  padding: 6px 16px; border-bottom: 1px solid var(--bm);
-  font-size: 10.5px;
-}
-.qb-icon { flex-shrink: 0; }
-.qb-info { flex: 1; }
-.qb-bearing { color: var(--gold); font-weight: 500; }
-.qb-distance { color: var(--b2); }
-.qb-arrow {
-  display: inline-block; transition: transform 0.3s ease;
-  font-size: 14px;
-}
-
 </style>
 </head>
 <body>
@@ -322,7 +126,7 @@ body {
     <div class="h-sub">Shariah Guidance</div>
   </div>
   <div class="h-right">
-    <div class="h-version">v2.3.0</div>
+    <div class="h-version">v2.1.0</div>
   </div>
 </div>
 
@@ -330,31 +134,6 @@ body {
   <div class="as-dot" id="as-dot"></div>
   <span class="as-text" id="as-text">Checking auth…</span>
   <button class="as-action" id="as-action"></button>
-</div>
-
-<!-- ── Error Banner ────────────────────────────────── -->
-<div class="error-banner" id="error-banner">
-  <div class="error-banner-header">
-    <span class="error-banner-icon">🔶</span>
-    <span id="eb-title">A small glitch</span>
-  </div>
-  <div class="error-banner-msg" id="eb-message"></div>
-  <div class="error-banner-actions">
-    <button class="eb-btn" id="eb-retry">Try Again</button>
-    <button class="eb-link" id="eb-report">Report Issue</button>
-    <button class="eb-link" id="eb-dismiss" style="margin-left:auto;color:#a1a1aa;text-decoration:none;">✕</button>
-  </div>
-</div>
-
-<!-- ── Feedback Form ───────────────────────────────── -->
-<div class="feedback-form" id="feedback-form">
-  <span class="ff-label">Describe what happened (optional):</span>
-  <textarea class="ff-textarea" id="ff-textarea" placeholder="Any details you'd like to share…" rows="2"></textarea>
-  <div class="ff-actions">
-    <button class="ff-btn ff-cancel" id="ff-cancel">Cancel</button>
-    <button class="ff-btn ff-submit" id="ff-submit">Send Report</button>
-  </div>
-  <div class="ff-status" id="ff-status" style="display:none;"></div>
 </div>
 
 <div class="wallet-mini" id="wallet-mini" style="display:none">
@@ -398,44 +177,6 @@ body {
   <span class="pb-label">Next Salah:</span>
   <span class="pb-val" id="pb-name">—</span>
   <span class="pb-time" id="pb-time"></span>
-</div>
-
-<!-- ── Dhikr Counter ──────────────────────────────── -->
-<div class="dhikr-section" id="dhikr-section">
-  <div class="dhikr-header">
-    <span class="dh-label">Dhikr Today</span>
-    <span class="dh-total" id="dh-total"><strong>—</strong> total</span>
-  </div>
-  <div class="dh-btns">
-    <button class="dh-btn" data-phrase="subhanallah">
-      <span class="dh-ar">سُبْحَانَ اللَّهِ</span>
-      <span class="dh-en">SubhanAllah</span>
-    </button>
-    <button class="dh-btn" data-phrase="alhamdulillah">
-      <span class="dh-ar">الْحَمْدُ لِلَّهِ</span>
-      <span class="dh-en">Alhamdulillah</span>
-    </button>
-    <button class="dh-btn" data-phrase="allahuakbar">
-      <span class="dh-ar">اللَّهُ أَكْبَرُ</span>
-      <span class="dh-en">AllahuAkbar</span>
-    </button>
-  </div>
-  <div class="dh-save-row">
-    <span class="dh-local">Session: <strong id="dh-session-count">0</strong></span>
-    <button class="dh-save-btn" id="dh-save-btn" disabled>Save</button>
-  </div>
-</div>
-
-<!-- ── Qibla Direction ────────────────────────────── -->
-<div class="qibla-section" id="qibla-section">
-  <svg class="qb-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8">
-    <path d="M12 2L15 8L22 9L17 14L18 21L12 17.5L6 21L7 14L2 9L9 8Z"/>
-  </svg>
-  <div class="qb-info">
-    <span class="qb-bearing" id="qb-bearing">Qibla: —</span>
-    <span class="qb-distance" id="qb-distance">· — km</span>
-  </div>
-  <span class="qb-arrow" id="qb-arrow">↑</span>
 </div>
 
 <div class="verse-section">

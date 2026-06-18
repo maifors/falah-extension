@@ -531,63 +531,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           sendResponse({ ok: true });
           break;
         }
-
-        // ── Dhikr Counter Handlers ────────────────────────────────────
-        case 'FALAH_GET_DHIKR_STATS': {
-          const { auth } = await chrome.storage.local.get('auth');
-          if (!auth?.token) { sendResponse({ ok: false, error: 'Not authenticated' }); break; }
-          try {
-            const resp = await fetch('https://ummahid.falahos.my/api/dhikr/stats', {
-              headers: { 'Authorization': `Bearer ${auth.token}` },
-              signal: AbortSignal.timeout(10000)
-            });
-            const data = await resp.json();
-            sendResponse({ ok: true, data });
-          } catch (e) {
-            sendResponse({ ok: false, error: e.message });
-          }
-          break;
-        }
-        case 'FALAH_POST_DHIKR': {
-          const { auth } = await chrome.storage.local.get('auth');
-          if (!auth?.token) { sendResponse({ ok: false, error: 'Not authenticated' }); break; }
-          try {
-            const resp = await fetch('https://ummahid.falahos.my/api/dhikr/stats', {
-              method: 'POST',
-              headers: { 'Authorization': `Bearer ${auth.token}`, 'Content-Type': 'application/json' },
-              body: JSON.stringify(msg.data || {}),
-              signal: AbortSignal.timeout(10000)
-            });
-            const data = await resp.json();
-            sendResponse({ ok: true, data });
-          } catch (e) {
-            sendResponse({ ok: false, error: e.message });
-          }
-          break;
-        }
-
-        // ── Qibla Direction Handler ──────────────────────────────────────
-        case 'FALAH_GET_QIBLA': {
-          const KAABA_LAT = 21.4225;
-          const KAABA_LNG = 39.8262;
-          function toRad(deg) { return (deg * Math.PI) / 180; }
-          function toDeg(rad) { return (rad * 180) / Math.PI; }
-          const lat = msg.lat, lng = msg.lng;
-          const φ1 = toRad(lat);
-          const φ2 = toRad(KAABA_LAT);
-          const Δλ = toRad(KAABA_LNG - lng);
-          const y = Math.sin(Δλ) * Math.cos(φ2);
-          const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
-          let bearing = toDeg(Math.atan2(y, x));
-          bearing = (bearing + 360) % 360;
-          const R = 6371;
-          const dLat = toRad(KAABA_LAT - lat);
-          const dLng = toRad(KAABA_LNG - lng);
-          const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat)) * Math.cos(toRad(KAABA_LAT)) * Math.sin(dLng/2)**2;
-          const distance = Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) * 10) / 10;
-          sendResponse({ ok: true, data: { bearing, distance } });
-          break;
-        }
         default:
           sendResponse({ ok: false, error: `Unknown message type: ${msg.type}` });
       }

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Falah — Page Blocked</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500&family=DM+Sans:wght@400;500&family=Noto+Naskh+Arabic:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root { --gold:#c9983c; --gold-light:#e8b455; }
+body {
+  background:#08080a; color:rgba(255,255,255,0.88);
+  font-family:'DM Sans',sans-serif;
+  min-height:100vh; display:flex; align-items:center; justify-content:center;
+  background-image:
+    repeating-linear-gradient(0deg,transparent,transparent 59px,rgba(201,152,60,0.02) 60px),
+    repeating-linear-gradient(90deg,transparent,transparent 59px,rgba(201,152,60,0.02) 60px);
+}
+.card {
+  background:#111114; border:1px solid rgba(239,68,68,0.2);
+  border-radius:20px; padding:44px 48px; max-width:440px; width:92%;
+  text-align:center; box-shadow:0 24px 80px rgba(0,0,0,0.6);
+}
+.icon { font-size:42px; margin-bottom:16px; display:block; }
+.title {
+  font-family:'Cormorant Garamond',serif;
+  font-size:28px; font-weight:400; margin-bottom:8px;
+  color:rgba(255,255,255,0.92);
+}
+.sub { font-size:13px; color:rgba(255,255,255,0.42); margin-bottom:20px; line-height:1.6; }
+.arabic {
+  font-family:'Noto Naskh Arabic',serif; font-size:18px;
+  color:var(--gold); direction:rtl; line-height:2; margin-bottom:8px;
+}
+.english { font-size:12px; color:rgba(255,255,255,0.38); font-style:italic; line-height:1.6; margin-bottom:5px; }
+.ref { font-size:11px; color:var(--gold); font-weight:500; margin-bottom:24px; }
+.btn {
+  display:block; width:100%; padding:12px; border-radius:10px;
+  font-size:13.5px; font-weight:500; cursor:pointer; margin-bottom:9px;
+  font-family:'DM Sans',sans-serif; border:none; transition:all 0.15s;
+}
+.btn-primary { background:var(--gold); color:#08080a; }
+.btn-primary:hover { background:var(--gold-light); }
+.btn-ghost { background:transparent; color:rgba(255,255,255,0.35); border:1px solid rgba(255,255,255,0.1); }
+.btn-ghost:hover { color:rgba(255,255,255,0.6); }
+</style>
+</head>
+<body>
+<div class="card">
+  <span class="icon">🚫</span>
+  <div class="title">Page Blocked</div>
+  <div class="sub" id="reason-text">Falah has blocked this page based on your Strict guidance setting.</div>
+  <div class="arabic">إِنَّمَا الْخَمْرُ وَالْمَيْسِرُ وَالْأَنصَابُ وَالْأَزْلَامُ رِجْسٌ</div>
+  <div class="english">"Intoxicants, gambling, and divining arrows are but defilement from the work of Satan."</div>
+  <div class="ref">Quran 5:90</div>
+  <button class="btn btn-primary" onclick="history.back()">← Return to Safety</button>
+  <button class="btn btn-ghost" onclick="document.body.style.display='none'; history.back()">Close</button>
+</div>
+<script>
+const p = new URLSearchParams(location.search);
+const r = p.get('reason');
+if (r) document.getElementById('reason-text').textContent = decodeURIComponent(r);
+</script>
+</body>
+</html>

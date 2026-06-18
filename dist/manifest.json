@@ -3,7 +3,7 @@
   "name": "Falah OS — Shariah-Compliant Browser",
   "short_name": "Falah",
   "description": "Falah OS — The first Shariah-compliant browser extension. Real-time halal/haram page classification, ad & tracker blocking, Ummah ID, FLH Wallet, Zakat engine, iStore, and AI guidance.",
-  "version": "2.3.0",
+  "version": "2.2.0",
   "default_locale": "en",
 
   "icons": {
@@ -67,8 +67,7 @@
     "tabs",
     "sidePanel",
     "declarativeNetRequest",
-    "declarativeNetRequestFeedback",
-    "geolocation"
+    "declarativeNetRequestFeedback"
   ],
 
   "host_permissions": [

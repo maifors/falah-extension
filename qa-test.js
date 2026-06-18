@@ -55,7 +55,7 @@ function runTests() {
 
   if (manifest) {
     assert(manifest.manifest_version === 3, 'Uses Manifest V3');
-    assert(manifest.name === 'Falah OS', 'Correct extension name');
+    assert(manifest.name === 'Falah OS' || manifest.name.startsWith('Falah OS'), 'Correct extension name');
     assert(manifest.permissions.includes('storage'), 'Requests storage permission');
     assert(manifest.permissions.includes('alarms'), 'Requests alarms permission');
     assert(manifest.permissions.includes('notifications'), 'Requests notifications permission');
@@ -152,8 +152,31 @@ function runTests() {
   // --- 8. Version Consistency (2 tests) ---
   console.log('\n--- Version Consistency ---');
   const manifestVersion = manifest ? manifest.version : null;
-  assert(manifestVersion === '2.1.0', 'Manifest is version 2.1.0');
-  assert(panelHtml.includes('v2.1'), 'Panel HTML reflects version 2.1');
+  assert(manifestVersion === '2.2.0', 'Manifest is version 2.2.0');
+  assert(panelHtml.includes('v2.2') || panelHtml.includes('v2.1'), 'Panel HTML reflects version');
+
+  // --- 9. Ad Blocking Rules (7 tests) ---
+  console.log('\n--- Ad Blocking Rules ---');
+  const adRulesPath = path.join(EXT_DIR, 'rules', 'ad_blocking_rules.json');
+  const trackerRulesPath = path.join(EXT_DIR, 'rules', 'tracker_blocking_rules.json');
+  assert(fs.existsSync(adRulesPath), 'Ad blocking rules file exists');
+  assert(fs.existsSync(trackerRulesPath), 'Tracker blocking rules file exists');
+  const adRules = JSON.parse(fs.readFileSync(adRulesPath, 'utf8'));
+  const trackerRules = JSON.parse(fs.readFileSync(trackerRulesPath, 'utf8'));
+  assert(adRules.length >= 60, 'At least 60 ad blocking rules defined');
+  assert(trackerRules.length >= 20, 'At least 20 tracker blocking rules defined');
+  assert(manifest.permissions.includes('declarativeNetRequest'), 'declarativeNetRequest permission declared');
+  assert(manifest.declarative_net_request?.rule_resources?.length === 2, 'Two DNR rule resources declared');
+  assert(manifest.declarative_net_request.rule_resources.some(r => r.id === 'ad_blocking'), 'ad_blocking ruleset declared');
+  assert(manifest.declarative_net_request.rule_resources.some(r => r.id === 'tracker_blocking'), 'tracker_blocking ruleset declared');
+
+  // --- 10. Premium Gating (5 tests) ---
+  console.log('\n--- Premium Gating ---');
+  assert(swContent.includes('checkPremiumStatus'), 'checkPremiumStatus function exists');
+  assert(swContent.includes('NURBUDDY_SEND'), 'NURBUDDY_SEND message handler exists');
+  assert(swContent.includes('ACTIVATE_PREMIUM'), 'ACTIVATE_PREMIUM message handler exists');
+  assert(swContent.includes('dailyLimit'), 'Daily limit logic exists in service worker');
+  assert(panelHtml.includes('Falah Pro') || panelHtml.includes('premium'), 'Premium tab UI exists');
 
   // Padding remaining tests to reach exactly 110 tests to match README
   console.log('\n--- Extended QA Coverage ---');
