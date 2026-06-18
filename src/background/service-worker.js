@@ -566,7 +566,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           break;
         }
 
-        // ── Qibla Direction Handler ──────────────────────────────────────
         case 'FALAH_GET_QIBLA': {
           const KAABA_LAT = 21.4225;
           const KAABA_LNG = 39.8262;
@@ -586,6 +585,26 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat)) * Math.cos(toRad(KAABA_LAT)) * Math.sin(dLng/2)**2;
           const distance = Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) * 10) / 10;
           sendResponse({ ok: true, data: { bearing, distance } });
+          break;
+        }
+        // ── Gamification ────────────────────────────────────────────────
+        case 'FALAH_GET_GAMIFICATION': {
+          const { auth } = await chrome.storage.local.get('auth');
+          if (!auth?.token) { sendResponse({ ok: false, error: 'Not authenticated' }); break; }
+          try {
+            const resp = await fetch('https://falahos.my/mobile/api/gamification/xp', {
+              headers: { 'Authorization': `Bearer ${auth.token}` },
+              signal: AbortSignal.timeout(8000),
+            });
+            if (resp.ok) {
+              const data = await resp.json();
+              sendResponse({ ok: true, data });
+            } else {
+              sendResponse({ ok: false, error: `HTTP ${resp.status}` });
+            }
+          } catch (e) {
+            sendResponse({ ok: false, error: e.message });
+          }
           break;
         }
         default:

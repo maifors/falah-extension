@@ -111,6 +111,269 @@ body {
   font-family: 'DM Sans', sans-serif; transition: color 0.15s;
 }
 .pf-btn:hover { color: var(--gold); }
+/* ── Error Banner ──────────────────────────────────── */
+.error-banner {
+  background: rgba(180,83,9,0.18);
+  border: 1px solid rgba(180,83,9,0.28);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 6px 14px;
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  animation: fadeIn 0.2s ease;
+}
+.error-banner.visible {
+  display: flex;
+}
+.error-banner-icon {
+  font-size: 14px;
+  margin-right: 6px;
+}
+.error-banner-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #fcd34d;
+}
+.error-banner-msg {
+  font-size: 10.5px;
+  color: #fde68a;
+  line-height: 1.5;
+}
+.error-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+.eb-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10.5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(251,191,36,0.25);
+  background: rgba(251,191,36,0.12);
+  color: #fbbf24;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.eb-btn:hover {
+  background: rgba(251,191,36,0.2);
+  border-color: rgba(251,191,36,0.4);
+}
+.eb-link {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  color: #a78bfa;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  padding: 2px 4px;
+  transition: color 0.1s;
+}
+.eb-link:hover { color: #c4b5fd; }
+/* ── Feedback Form ────────────────────────────────── */
+.feedback-form {
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 14px 6px;
+  padding: 10px 14px;
+  background: rgba(180,83,9,0.12);
+  border: 1px solid rgba(180,83,9,0.2);
+  border-radius: 8px;
+}
+.feedback-form.visible {
+  display: flex;
+}
+.ff-label {
+  font-size: 10px;
+  color: #fde68a;
+  font-weight: 500;
+}
+.ff-textarea {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10.5px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(251,191,36,0.2);
+  border-radius: 6px;
+  padding: 6px 8px;
+  color: #fef3c7;
+  resize: vertical;
+  min-height: 44px;
+  outline: none;
+  transition: border-color 0.12s;
+}
+.ff-textarea:focus { border-color: #f59e0b; }
+.ff-textarea::placeholder { color: #92400e; }
+.ff-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+.ff-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10.5px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(251,191,36,0.25);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.ff-submit {
+  background: #d97706;
+  color: #1c1917;
+  font-weight: 500;
+  border-color: #f59e0b;
+}
+.ff-submit:hover { background: #b45309; }
+.ff-submit:disabled { opacity: 0.5; cursor: default; }
+.ff-cancel {
+  background: transparent;
+  color: #a1a1aa;
+  border-color: rgba(255,255,255,0.12);
+}
+.ff-cancel:hover { background: rgba(255,255,255,0.08); }
+.ff-status {
+  font-size: 10px;
+  color: #6ee7b7;
+  text-align: center;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+/* ── Souq Mini-Feed ──────────────────────────────────── */
+.souq-mini {
+  border-bottom: 1px solid var(--bm);
+  padding: 6px 14px;
+}
+.sm-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 4px;
+}
+.sm-title { font-size: 10px; color: var(--b3); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; }
+.sm-count { font-size: 9px; color: var(--gold); }
+.sm-item {
+  display: flex; align-items: center; gap: 6px;
+  padding: 3px 0; font-size: 10px; color: var(--b2);
+  text-decoration: none; cursor: pointer;
+}
+.sm-item:hover { color: var(--gold); }
+.sm-item svg { flex-shrink: 0; }
+.sm-item .sm-price { margin-left: auto; font-family: 'JetBrains Mono', monospace; color: var(--gold); font-size: 10px; }
+.sm-empty { font-size: 10px; color: var(--b3); text-align: center; padding: 6px 0; }
+/* ── Mobile App Banner ───────────────────────────────── */
+.app-banner {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 14px; border-bottom: 1px solid var(--bm);
+  font-size: 10px; color: var(--b2);
+  cursor: pointer; text-decoration: none;
+  transition: background 0.12s;
+}
+.app-banner:hover { background: var(--gold-dim); color: var(--gold); }
+.app-banner svg { flex-shrink: 0; }
+/* ── Gamification in Auth Bar ────────────────────────── */
+.as-xp {
+  margin-left: auto; display: flex; align-items: center; gap: 4px;
+  font-size: 9px; color: var(--b3);
+}
+.as-xp strong { color: var(--gold); font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+/* ── Enhanced Prayer Section ──────────────────────────── */
+.prayer-section {
+  border-bottom: 1px solid var(--bm);
+  padding: 8px 14px;
+}
+.ps-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.ps-title { font-size: 10px; color: var(--b3); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; }
+.ps-countdown { font-size: 11px; color: var(--gold); font-weight: 500; }
+.ps-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 3px; margin-bottom: 5px; }
+.ps-item {
+  text-align: center; padding: 4px 2px; border-radius: 5px;
+  background: var(--bg-c); border: 1px solid var(--bm); cursor: default;
+  transition: all 0.12s;
+}
+.ps-item.next {
+  background: rgba(201,152,60,0.15); border-color: var(--gold-border);
+}
+.ps-item .ps-item-name { font-size: 9px; color: var(--b3); font-weight: 500; text-transform: uppercase; }
+.ps-item .ps-item-time { font-size: 10px; color: var(--b1); font-family: 'JetBrains Mono', monospace; }
+.ps-item.next .ps-item-name { color: var(--gold); }
+.ps-item.next .ps-item-time { color: var(--gold-light); }
+.ps-item.passed { opacity: 0.4; }
+.ps-item.current { opacity: 1; }
+.ps-progress { display: flex; align-items: center; gap: 6px; }
+.ps-progress-bar {
+  flex: 1; height: 3px; background: var(--bg-r); border-radius: 2px; overflow: hidden;
+}
+.ps-progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-light)); border-radius: 2px; transition: width 1s linear; }
+.ps-progress-label { font-size: 9px; color: var(--b3); flex-shrink: 0; white-space: nowrap; }
+.dhikr-section {
+  border-bottom: 1px solid var(--bm);
+  padding: 8px 16px;
+}
+.dhikr-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.dh-label {
+  font-size: 10px; color: var(--b3); text-transform: uppercase;
+  letter-spacing: 0.06em; font-weight: 500;
+}
+.dh-total {
+  font-size: 11px; color: var(--gold);
+  font-weight: 500;
+}
+.dh-total strong { font-size: 14px; }
+.dh-btns {
+  display: flex; gap: 5px; margin-bottom: 5px;
+}
+.dh-btn {
+  flex: 1; background: var(--bg-c); border: 1px solid var(--bm);
+  border-radius: 6px; padding: 5px 4px; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; font-size: 10px; color: var(--b2);
+  text-align: center; transition: all 0.12s; line-height: 1.3;
+}
+.dh-btn:hover { border-color: var(--gold-border); background: var(--gold-dim); color: var(--gold); }
+.dh-btn:active { transform: scale(0.95); }
+.dh-btn .dh-ar { display: block; font-size: 11px; color: var(--gold); font-weight: 500; }
+.dh-btn .dh-en { display: block; font-size: 9px; color: var(--b3); }
+.dh-save-row {
+  display: flex; align-items: center; gap: 8px;
+}
+.dh-local {
+  font-size: 10px; color: var(--b2);
+}
+.dh-local strong { color: var(--gold); }
+.dh-save-btn {
+  margin-left: auto;
+  background: var(--gold-dim); border: 1px solid var(--gold-border);
+  border-radius: 6px; padding: 3px 10px; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; font-size: 10px; color: var(--gold);
+  font-weight: 500; transition: all 0.12s;
+}
+.dh-save-btn:hover { background: rgba(201,152,60,0.22); }
+.dh-save-btn:disabled { opacity: 0.4; cursor: default; }
+/* ── Qibla Direction ──────────────────────────────── */
+.qibla-section {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 16px; border-bottom: 1px solid var(--bm);
+  font-size: 10.5px;
+}
+.qb-icon { flex-shrink: 0; }
+.qb-info { flex: 1; }
+.qb-bearing { color: var(--gold); font-weight: 500; }
+.qb-distance { color: var(--b2); }
+.qb-arrow {
+  display: inline-block; transition: transform 0.3s ease;
+  font-size: 14px;
+}
+
 </style>
 </head>
 <body>
@@ -126,14 +389,40 @@ body {
     <div class="h-sub">Shariah Guidance</div>
   </div>
   <div class="h-right">
-    <div class="h-version">v2.1.0</div>
+    <div class="h-version">v2.4.0</div>
   </div>
 </div>
 
 <div class="auth-status" id="auth-status">
   <div class="as-dot" id="as-dot"></div>
   <span class="as-text" id="as-text">Checking auth…</span>
+  <span class="as-xp" id="as-xp" style="display:none"><strong id="as-level">—</strong> <span id="as-xp-label">XP</span></span>
   <button class="as-action" id="as-action"></button>
+</div>
+
+<!-- ── Error Banner ────────────────────────────────── -->
+<div class="error-banner" id="error-banner">
+  <div class="error-banner-header">
+    <span class="error-banner-icon">🔶</span>
+    <span id="eb-title">A small glitch</span>
+  </div>
+  <div class="error-banner-msg" id="eb-message"></div>
+  <div class="error-banner-actions">
+    <button class="eb-btn" id="eb-retry">Try Again</button>
+    <button class="eb-link" id="eb-report">Report Issue</button>
+    <button class="eb-link" id="eb-dismiss" style="margin-left:auto;color:#a1a1aa;text-decoration:none;">✕</button>
+  </div>
+</div>
+
+<!-- ── Feedback Form ───────────────────────────────── -->
+<div class="feedback-form" id="feedback-form">
+  <span class="ff-label">Describe what happened (optional):</span>
+  <textarea class="ff-textarea" id="ff-textarea" placeholder="Any details you'd like to share…" rows="2"></textarea>
+  <div class="ff-actions">
+    <button class="ff-btn ff-cancel" id="ff-cancel">Cancel</button>
+    <button class="ff-btn ff-submit" id="ff-submit">Send Report</button>
+  </div>
+  <div class="ff-status" id="ff-status" style="display:none;"></div>
 </div>
 
 <div class="wallet-mini" id="wallet-mini" style="display:none">
@@ -153,15 +442,19 @@ body {
 <div class="actions">
   <button class="action-btn" id="btn-toggle-panel">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-    Open Panel
+    Side Panel
   </button>
-  <button class="action-btn" id="btn-istore">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
-    iStore
+  <button class="action-btn" id="btn-souq">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    Souq
   </button>
   <button class="action-btn" id="btn-wallet">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 010-4h14v4"/><path d="M3 5v14a2 2 0 002 2h16v-5"/><path d="M18 12a2 2 0 000 4h4v-4z"/></svg>
     Wallet
+  </button>
+  <button class="action-btn" id="btn-halal">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    Halal
   </button>
   <button class="action-btn" id="btn-widgets">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -173,11 +466,73 @@ body {
   </button>
 </div>
 
-<div class="prayer-bar">
-  <span class="pb-label">Next Salah:</span>
-  <span class="pb-val" id="pb-name">—</span>
-  <span class="pb-time" id="pb-time"></span>
+<!-- ── Enhanced Prayer Section ────────────────────────── -->
+<div class="prayer-section" id="prayer-section">
+  <div class="ps-header">
+    <span class="ps-title">Prayer Times</span>
+    <span class="ps-countdown" id="ps-countdown">—</span>
+  </div>
+  <div class="ps-grid" id="ps-grid">
+    <!-- 5 prayer times rendered by JS -->
+  </div>
+  <div class="ps-progress">
+    <div class="ps-progress-bar"><div class="ps-progress-fill" id="ps-progress-fill" style="width:0%"></div></div>
+    <span class="ps-progress-label" id="ps-progress-label">—</span>
+  </div>
 </div>
+
+<!-- ── Dhikr Counter ──────────────────────────────── -->
+<div class="dhikr-section" id="dhikr-section">
+  <div class="dhikr-header">
+    <span class="dh-label">Dhikr Today</span>
+    <span class="dh-total" id="dh-total"><strong>—</strong> total</span>
+  </div>
+  <div class="dh-btns">
+    <button class="dh-btn" data-phrase="subhanallah">
+      <span class="dh-ar">سُبْحَانَ اللَّهِ</span>
+      <span class="dh-en">SubhanAllah</span>
+    </button>
+    <button class="dh-btn" data-phrase="alhamdulillah">
+      <span class="dh-ar">الْحَمْدُ لِلَّهِ</span>
+      <span class="dh-en">Alhamdulillah</span>
+    </button>
+    <button class="dh-btn" data-phrase="allahuakbar">
+      <span class="dh-ar">اللَّهُ أَكْبَرُ</span>
+      <span class="dh-en">AllahuAkbar</span>
+    </button>
+  </div>
+  <div class="dh-save-row">
+    <span class="dh-local">Session: <strong id="dh-session-count">0</strong></span>
+    <button class="dh-save-btn" id="dh-save-btn" disabled>Save</button>
+  </div>
+</div>
+
+<!-- ── Qibla Direction ────────────────────────────── -->
+<div class="qibla-section" id="qibla-section">
+  <svg class="qb-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8">
+    <path d="M12 2L15 8L22 9L17 14L18 21L12 17.5L6 21L7 14L2 9L9 8Z"/>
+  </svg>
+  <div class="qb-info">
+    <span class="qb-bearing" id="qb-bearing">Qibla: —</span>
+    <span class="qb-distance" id="qb-distance">· — km</span>
+  </div>
+  <span class="qb-arrow" id="qb-arrow">↑</span>
+</div>
+
+<!-- ── Souq Mini-Feed ────────────────────────────────── -->
+<div class="souq-mini" id="souq-mini" style="display:none">
+  <div class="sm-header">
+    <span class="sm-title">Souq</span>
+    <span class="sm-count" id="sm-count">— listings</span>
+  </div>
+  <div id="sm-items"></div>
+</div>
+
+<!-- ── Mobile App Banner ────────────────────────────── -->
+<a class="app-banner" id="app-banner" href="https://github.com/maifors/falah-mobile/blob/main/PWA-INSTALL.md" target="_blank">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+  📲 Install on your phone — Full Falah experience
+</a>
 
 <div class="verse-section">
   <div class="v-arabic" id="v-arabic">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>

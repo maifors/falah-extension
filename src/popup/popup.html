@@ -245,7 +245,74 @@ body {
   text-align: center;
 }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
-/* ── Dhikr Counter ────────────────────────────────── */
+/* ── Souq Mini-Feed ──────────────────────────────────── */
+.souq-mini {
+  border-bottom: 1px solid var(--bm);
+  padding: 6px 14px;
+}
+.sm-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 4px;
+}
+.sm-title { font-size: 10px; color: var(--b3); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; }
+.sm-count { font-size: 9px; color: var(--gold); }
+.sm-item {
+  display: flex; align-items: center; gap: 6px;
+  padding: 3px 0; font-size: 10px; color: var(--b2);
+  text-decoration: none; cursor: pointer;
+}
+.sm-item:hover { color: var(--gold); }
+.sm-item svg { flex-shrink: 0; }
+.sm-item .sm-price { margin-left: auto; font-family: 'JetBrains Mono', monospace; color: var(--gold); font-size: 10px; }
+.sm-empty { font-size: 10px; color: var(--b3); text-align: center; padding: 6px 0; }
+/* ── Mobile App Banner ───────────────────────────────── */
+.app-banner {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 14px; border-bottom: 1px solid var(--bm);
+  font-size: 10px; color: var(--b2);
+  cursor: pointer; text-decoration: none;
+  transition: background 0.12s;
+}
+.app-banner:hover { background: var(--gold-dim); color: var(--gold); }
+.app-banner svg { flex-shrink: 0; }
+/* ── Gamification in Auth Bar ────────────────────────── */
+.as-xp {
+  margin-left: auto; display: flex; align-items: center; gap: 4px;
+  font-size: 9px; color: var(--b3);
+}
+.as-xp strong { color: var(--gold); font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+/* ── Enhanced Prayer Section ──────────────────────────── */
+.prayer-section {
+  border-bottom: 1px solid var(--bm);
+  padding: 8px 14px;
+}
+.ps-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.ps-title { font-size: 10px; color: var(--b3); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; }
+.ps-countdown { font-size: 11px; color: var(--gold); font-weight: 500; }
+.ps-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 3px; margin-bottom: 5px; }
+.ps-item {
+  text-align: center; padding: 4px 2px; border-radius: 5px;
+  background: var(--bg-c); border: 1px solid var(--bm); cursor: default;
+  transition: all 0.12s;
+}
+.ps-item.next {
+  background: rgba(201,152,60,0.15); border-color: var(--gold-border);
+}
+.ps-item .ps-item-name { font-size: 9px; color: var(--b3); font-weight: 500; text-transform: uppercase; }
+.ps-item .ps-item-time { font-size: 10px; color: var(--b1); font-family: 'JetBrains Mono', monospace; }
+.ps-item.next .ps-item-name { color: var(--gold); }
+.ps-item.next .ps-item-time { color: var(--gold-light); }
+.ps-item.passed { opacity: 0.4; }
+.ps-item.current { opacity: 1; }
+.ps-progress { display: flex; align-items: center; gap: 6px; }
+.ps-progress-bar {
+  flex: 1; height: 3px; background: var(--bg-r); border-radius: 2px; overflow: hidden;
+}
+.ps-progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-light)); border-radius: 2px; transition: width 1s linear; }
+.ps-progress-label { font-size: 9px; color: var(--b3); flex-shrink: 0; white-space: nowrap; }
 .dhikr-section {
   border-bottom: 1px solid var(--bm);
   padding: 8px 16px;
@@ -322,13 +389,14 @@ body {
     <div class="h-sub">Shariah Guidance</div>
   </div>
   <div class="h-right">
-    <div class="h-version">v2.3.0</div>
+    <div class="h-version">v2.4.0</div>
   </div>
 </div>
 
 <div class="auth-status" id="auth-status">
   <div class="as-dot" id="as-dot"></div>
   <span class="as-text" id="as-text">Checking auth…</span>
+  <span class="as-xp" id="as-xp" style="display:none"><strong id="as-level">—</strong> <span id="as-xp-label">XP</span></span>
   <button class="as-action" id="as-action"></button>
 </div>
 
@@ -374,15 +442,19 @@ body {
 <div class="actions">
   <button class="action-btn" id="btn-toggle-panel">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-    Open Panel
+    Side Panel
   </button>
-  <button class="action-btn" id="btn-istore">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
-    iStore
+  <button class="action-btn" id="btn-souq">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    Souq
   </button>
   <button class="action-btn" id="btn-wallet">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 010-4h14v4"/><path d="M3 5v14a2 2 0 002 2h16v-5"/><path d="M18 12a2 2 0 000 4h4v-4z"/></svg>
     Wallet
+  </button>
+  <button class="action-btn" id="btn-halal">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    Halal
   </button>
   <button class="action-btn" id="btn-widgets">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -394,10 +466,19 @@ body {
   </button>
 </div>
 
-<div class="prayer-bar">
-  <span class="pb-label">Next Salah:</span>
-  <span class="pb-val" id="pb-name">—</span>
-  <span class="pb-time" id="pb-time"></span>
+<!-- ── Enhanced Prayer Section ────────────────────────── -->
+<div class="prayer-section" id="prayer-section">
+  <div class="ps-header">
+    <span class="ps-title">Prayer Times</span>
+    <span class="ps-countdown" id="ps-countdown">—</span>
+  </div>
+  <div class="ps-grid" id="ps-grid">
+    <!-- 5 prayer times rendered by JS -->
+  </div>
+  <div class="ps-progress">
+    <div class="ps-progress-bar"><div class="ps-progress-fill" id="ps-progress-fill" style="width:0%"></div></div>
+    <span class="ps-progress-label" id="ps-progress-label">—</span>
+  </div>
 </div>
 
 <!-- ── Dhikr Counter ──────────────────────────────── -->
@@ -437,6 +518,21 @@ body {
   </div>
   <span class="qb-arrow" id="qb-arrow">↑</span>
 </div>
+
+<!-- ── Souq Mini-Feed ────────────────────────────────── -->
+<div class="souq-mini" id="souq-mini" style="display:none">
+  <div class="sm-header">
+    <span class="sm-title">Souq</span>
+    <span class="sm-count" id="sm-count">— listings</span>
+  </div>
+  <div id="sm-items"></div>
+</div>
+
+<!-- ── Mobile App Banner ────────────────────────────── -->
+<a class="app-banner" id="app-banner" href="https://github.com/maifors/falah-mobile/blob/main/PWA-INSTALL.md" target="_blank">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+  📲 Install on your phone — Full Falah experience
+</a>
 
 <div class="verse-section">
   <div class="v-arabic" id="v-arabic">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
