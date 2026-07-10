@@ -23,7 +23,7 @@ html:not(#falah-noop) {
   padding: 0 12px !important;
   gap: 10px !important;
   background: linear-gradient(90deg, rgba(15,15,18,0.98) 0%, rgba(18,18,22,0.97) 100%) !important;
-  border-bottom: 1px solid rgba(201,152,60,0.2) !important;
+  border-bottom: 1px solid rgba(201,168,76,0.2) !important;
   backdrop-filter: blur(16px) !important;
   -webkit-backdrop-filter: blur(16px) !important;
   font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
@@ -37,7 +37,7 @@ html:not(#falah-noop) {
   position: absolute !important;
   left: 0 !important; top: 0 !important; bottom: 0 !important;
   width: 3px !important;
-  background: linear-gradient(180deg, #c9983c, transparent) !important;
+  background: linear-gradient(180deg, #c9a84c, transparent) !important;
   pointer-events: none !important;
 }
 
@@ -64,7 +64,7 @@ html:not(#falah-noop) {
 
 .fsb-lantern svg {
   display: block !important;
-  filter: drop-shadow(0 0 5px rgba(201,152,60,0.45)) !important;
+  filter: drop-shadow(0 0 5px rgba(201,168,76,0.45)) !important;
 }
 
 /* Verdict pill */
@@ -111,7 +111,7 @@ html:not(#falah-noop) {
 }
 
 .fsb-evidence em {
-  color: #c9983c !important;
+  color: #c9a84c !important;
   font-style: normal !important;
 }
 
@@ -142,14 +142,14 @@ html:not(#falah-noop) {
 }
 
 .fsb-pill-gold {
-  background: rgba(201,152,60,0.12) !important;
-  color: #c9983c !important;
-  border-color: rgba(201,152,60,0.22) !important;
+  background: rgba(201,168,76,0.12) !important;
+  color: #c9a84c !important;
+  border-color: rgba(201,168,76,0.22) !important;
 }
 
 .fsb-pill-gold:hover {
-  background: rgba(201,152,60,0.2) !important;
-  color: #e8b455 !important;
+  background: rgba(201,168,76,0.2) !important;
+  color: #dfc06a !important;
 }
 
 .fsb-prayer {
@@ -178,7 +178,7 @@ html:not(#falah-noop) {
   transform: translateX(-100%) !important;
   transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
   box-shadow: 4px 0 24px rgba(0,0,0,0.45) !important;
-  border-right: 1px solid rgba(201,152,60,0.15) !important;
+  border-right: 1px solid rgba(201,168,76,0.15) !important;
 }
 
 #falah-panel-container.falah-panel-open,
@@ -255,7 +255,7 @@ html.falah-panel-open #falah-panel-container {
 .fbo-arabic {
   font-family: 'Noto Naskh Arabic', 'Traditional Arabic', serif !important;
   font-size: 17px !important;
-  color: #c9983c !important;
+  color: #c9a84c !important;
   direction: rtl !important;
   line-height: 2 !important;
   margin-bottom: 8px !important;
@@ -271,7 +271,7 @@ html.falah-panel-open #falah-panel-container {
 
 .fbo-ref {
   font-size: 11px !important;
-  color: #c9983c !important;
+  color: #c9a84c !important;
   font-weight: 500 !important;
   margin-bottom: 22px !important;
 }
@@ -292,12 +292,12 @@ html.falah-panel-open #falah-panel-container {
 }
 
 .fbo-btn-primary {
-  background: #c9983c !important;
+  background: #c9a84c !important;
   color: #08080a !important;
 }
 
 .fbo-btn-primary:hover {
-  background: #e8b455 !important;
+  background: #dfc06a !important;
 }
 
 .fbo-btn-ghost {
@@ -320,7 +320,7 @@ html.falah-panel-open #falah-panel-container {
   position: fixed !important;
   z-index: 2147483644 !important;
   background: rgba(13,13,16,0.96) !important;
-  border: 1px solid rgba(201,152,60,0.15) !important;
+  border: 1px solid rgba(201,168,76,0.15) !important;
   border-radius: 12px !important;
   box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
   backdrop-filter: blur(16px) !important;
@@ -414,11 +414,11 @@ html.falah-panel-open #falah-panel-container {
 }
 
 .fw-btn.fw-sticky-active {
-  color: #c9983c !important;
+  color: #c9a84c !important;
 }
 
 .fw-btn.fw-sticky-active:hover {
-  background: rgba(201,152,60,0.15) !important;
+  background: rgba(201,168,76,0.15) !important;
 }
 
 .fw-body {
@@ -487,11 +487,11 @@ html.falah-panel-open #falah-panel-container {
 }
 
 .fw-prayer-row.fw-prayer-active {
-  background: rgba(201,152,60,0.1) !important;
+  background: rgba(201,168,76,0.1) !important;
 }
 
 .fw-prayer-row.fw-prayer-active .fw-prayer-label {
-  color: #c9983c !important;
+  color: #c9a84c !important;
   font-weight: 500 !important;
 }
 
@@ -526,7 +526,7 @@ html.falah-panel-open #falah-panel-container {
 }
 
 .fw-halal-field:focus {
-  border-color: rgba(201,152,60,0.4) !important;
+  border-color: rgba(201,168,76,0.4) !important;
 }
 
 .fw-halal-field::placeholder {
@@ -538,7 +538,7 @@ html.falah-panel-open #falah-panel-container {
   padding: 0 10px !important;
   border-radius: 6px !important;
   border: none !important;
-  background: #c9983c !important;
+  background: #c9a84c !important;
   color: #08080a !important;
   font-size: 11px !important;
   font-weight: 600 !important;
@@ -595,8 +595,8 @@ html.falah-panel-open #falah-panel-container {
 .fw-halal-brief {
   margin-top: 7px !important;
   padding: 7px 9px !important;
-  background: rgba(201,152,60,0.07) !important;
-  border: 1px solid rgba(201,152,60,0.2) !important;
+  background: rgba(201,168,76,0.07) !important;
+  border: 1px solid rgba(201,168,76,0.2) !important;
   border-radius: 5px !important;
   font-size: 10px !important;
   color: rgba(255,255,255,0.6) !important;
@@ -606,13 +606,13 @@ html.falah-panel-open #falah-panel-container {
 .fw-halal-brief::before {
   content: '🕌 Whisper Says: ';
   font-weight: 600 !important;
-  color: #c9983c !important;
+  color: #c9a84c !important;
 }
 
 .fw-halal-quran {
   margin-top: 5px !important;
   font-size: 9.5px !important;
-  color: rgba(201,152,60,0.8) !important;
+  color: rgba(201,168,76,0.8) !important;
   font-style: italic !important;
 }
 
@@ -625,7 +625,7 @@ html.falah-panel-open #falah-panel-container {
 .fw-wallet-amount {
   font-size: 24px !important;
   font-weight: 600 !important;
-  color: #c9983c !important;
+  color: #c9a84c !important;
   line-height: 1.2 !important;
 }
 
@@ -680,7 +680,7 @@ html.falah-panel-open #falah-panel-container {
 }
 
 .fw-zakat-field:focus {
-  border-color: rgba(201,152,60,0.4) !important;
+  border-color: rgba(201,168,76,0.4) !important;
 }
 
 .fw-zakat-field::placeholder {
@@ -744,7 +744,7 @@ html.falah-panel-open #falah-panel-container {
 .fw-verse-arabic {
   font-family: 'Noto Naskh Arabic', 'Traditional Arabic', serif !important;
   font-size: 16px !important;
-  color: #c9983c !important;
+  color: #c9a84c !important;
   direction: rtl !important;
   text-align: center !important;
   line-height: 1.8 !important;
@@ -761,7 +761,7 @@ html.falah-panel-open #falah-panel-container {
 
 .fw-verse-ref {
   font-size: 9.5px !important;
-  color: rgba(201,152,60,0.7) !important;
+  color: rgba(201,168,76,0.7) !important;
   font-weight: 500 !important;
 }
 
@@ -775,8 +775,8 @@ html.falah-panel-open #falah-panel-container {
   height: 36px !important;
   border-radius: 10px !important;
   background: rgba(19,19,23,0.88) !important;
-  border: 1px solid rgba(201,152,60,0.2) !important;
-  color: #c9983c !important;
+  border: 1px solid rgba(201,168,76,0.2) !important;
+  color: #c9a84c !important;
   cursor: pointer !important;
   display: flex !important;
   align-items: center !important;
@@ -791,8 +791,8 @@ html.falah-panel-open #falah-panel-container {
 }
 
 #falah-widget-toggle:hover {
-  background: rgba(201,152,60,0.15) !important;
-  border-color: rgba(201,152,60,0.4) !important;
+  background: rgba(201,168,76,0.15) !important;
+  border-color: rgba(201,168,76,0.4) !important;
   transform: scale(1.05) !important;
 }
 
@@ -803,7 +803,7 @@ html.falah-panel-open #falah-panel-container {
   bottom: 64px !important;
   right: 20px !important;
   background: rgba(13,13,16,0.98) !important;
-  border: 1px solid rgba(201,152,60,0.18) !important;
+  border: 1px solid rgba(201,168,76,0.18) !important;
   border-radius: 10px !important;
   padding: 12px !important;
   min-width: 210px !important;
@@ -882,8 +882,8 @@ html.falah-panel-open #falah-panel-container {
 }
 
 .fw-badge-sticky {
-  background: rgba(201,152,60,0.15) !important;
-  color: #c9983c !important;
+  background: rgba(201,168,76,0.15) !important;
+  color: #c9a84c !important;
 }
 
 .fw-badge-minimized {
