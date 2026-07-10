@@ -32,7 +32,7 @@ Classification uses a two-tier engine: **local regex rules** (offline-capable) b
 Every verdict is backed by authentic Islamic principles with context-matched **Quranic verses** and **Hadith** evidence (*Maysir* for gambling, *Khamr* for alcohol, *Riba* for interest, etc.).
 
 ### 🖥️ Premium Side Panel & Widgets
-- **Verdict Side Panel** — Dark gold-themed panel with Arabic verses, English translation, and Whisper guidance
+- **Verdict Side Panel** — Panel harmonised with the [Ummah FalahOS](https://ummah.falahos.my) design system: deep green (`#1a472a`), Islamic gold (`#c9a84c`), cream (`#f5e6c8`), Playfair Display headings, 12px card radii
 - **Floating Widgets** — Draggable, stateful mini-apps for Prayer Times, Halal Checker, Wallet Balance, Zakat Calculator, and Verse of the Day
 - **Evidence Subbar** — Minimal floating bar showing active verdict and guidance text
 
@@ -71,6 +71,21 @@ Every verdict is backed by authentic Islamic principles with context-matched **Q
 - **Day progress bar** — visual sense of the passing day
 - Daily **Quranic verse** rotation
 - **Guidance levels** — Advisory / Caution / Strict
+
+### 🎨 UI Design System
+The extension UI is harmonised with **[Ummah FalahOS](https://ummah.falahos.my)** (WordPress + Astra theme):
+
+| Token | Hex | Usage |
+|-------|-----|-------|
+| `--gold` | `#c9a84c` | Primary accent — active tabs, prayer highlights, prices, gold button |
+| `--gold-light` | `#dfc06a` | Hover state, brand name glow |
+| `--emerald` | `#1a472a` | Positive indicators, safe verdicts (alongside jade `#10b981`) |
+| `--cream` | `#f5e6c8` | Light accent text on dark surfaces |
+| `--dark` | `#0d1a0d` | Deepest background — near-black green tint |
+| **Headings** | Playfair Display | Side panel brand name, clock, wallet balances, score displays |
+| **Body** | DM Sans | All UI text, buttons, inputs |
+| **Card radius** | `12px` | Verdict, wallet, monitor, zakat cards |
+| **Button radius** | `6px` | All interactive buttons, pills |
 
 ### 🔗 Live App Integration
 - All extension data sources now point to the **live Falah OS Mobile backend** (`falahos.my/mobile`) instead of static Netlify pages
@@ -139,7 +154,7 @@ falah-extension-v2/
     │   └── content.css        # Floating UI styles with !important isolation
     ├── panel/
     │   ├── panel.html         # Side panel UI (dashboard, wallet, souq, zakat, config)
-    │   ├── panel.css          # Dark gold "Institutional Noir" design system
+    │       ├── panel.css          # Ummah FalahOS-harmonised design system (emerald/gold/cream)
     │   └── panel.js           # Panel logic: auth, wallet, souq, zakat, settings
     └── popup/
         ├── popup.html         # Quick-status popup (300px) — prayer grid, Souq feed, verse
@@ -277,6 +292,7 @@ Popup opens
 - [x] Gamification mini (XP/Level display) (v2.4.0)
 - [x] PWA install banner (v2.4.0)
 - [x] ErrorFeedback with "Try Again" on API failures
+- [x] UI harmonisation with Ummah FalahOS design system (gold/emerald/cream palette, Playfair Display headings, 12px card radii)
 - [ ] Chrome Web Store publication
 - [ ] Edge/Firefox compatibility
 - [ ] Encrypted bookmark sync
